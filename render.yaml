@@ -3,7 +3,7 @@ services:
     name: focusframe
     runtime: node
     buildCommand: cd server && npm install
-    startCommand: cd server && node server.js
+    startCommand: cd ../server && node server.js
     envVars:
       - key: GMAIL_USER
         value: hellofocusframe26@gmail.com
