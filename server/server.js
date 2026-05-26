@@ -47,8 +47,8 @@ var SITE_INFO = [
 ].join('\n');
 
 app.post('/api/chat', async function(req, res) {
-  if (!process.env.DEEPSEEK_API_KEY) {
-    return res.status(503).json({ reply: 'Dasher is not configured yet. Please set the DEEPSEEK_API_KEY.' });
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(503).json({ reply: 'Dasher is not configured yet. Please set the GEMINI_API_KEY.' });
   }
 
   var messages = req.body.messages;
@@ -56,18 +56,18 @@ app.post('/api/chat', async function(req, res) {
     return res.status(400).json({ reply: 'Please send a message.' });
   }
 
-  var deepseek = new OpenAI({ apiKey: process.env.DEEPSEEK_API_KEY, baseURL: 'https://api.deepseek.com' });
+  var gemini = new OpenAI({ apiKey: process.env.GEMINI_API_KEY, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' });
 
   var systemMsg = 'You are Dasher, a helpful AI assistant for the FocusFrame website. Your role is to help users understand the product, navigate the site, and find what they need.\n\nAlways be friendly, concise, and enthusiastic about FocusFrame.\n\nWhen a user is looking for a specific page, provide a direct link like <a href="/pricing.html">Pricing</a>.\n\nHere is the site information you know:\n' + SITE_INFO + '\n\nIf a user asks about something not related to FocusFrame, politely redirect them back to the website topic.';
 
   var fullMessages = [{ role: 'system', content: systemMsg }].concat(messages);
 
-  var modelsToTry = ['deepseek-chat', 'deepseek-reasoner'];
+  var modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.0-flash-lite'];
   var lastError = '';
 
   for (var mi = 0; mi < modelsToTry.length; mi++) {
     try {
-      var response = await deepseek.chat.completions.create({
+      var response = await gemini.chat.completions.create({
         model: modelsToTry[mi],
         max_tokens: 1024,
         messages: fullMessages
@@ -78,7 +78,7 @@ app.post('/api/chat', async function(req, res) {
     }
   }
 
-  console.error('DeepSeek error:', lastError);
+  console.error('Gemini error:', lastError);
   res.json({ reply: 'Dasher error: ' + lastError });
 });
 
