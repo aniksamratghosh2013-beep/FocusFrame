@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — FocusFrame</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+--primary: #6366f1;
+--primary-dim: #4f46e5;
+--amber: #f59e0b;
+--cyan: #06b6d4;
+--navy: #0a0f1e;
+--dark: #080c14;
+--surface: #111827;
+--text: #f1f5f9;
+--muted: #94a3b8;
+--glass: rgba(255,255,255,0.04);
+--ff-display: 'Space Grotesk', sans-serif;
+--ff-body: 'Inter', sans-serif;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--dark)}
+body{font-family:var(--ff-body);background:var(--dark);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--primary);color:#fff}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--dark)}
+::-webkit-scrollbar-thumb{background:var(--primary);border-radius:3px}
+
+.section{padding:6rem 0;position:relative}
+.container{width:100%;max-width:1280px;margin:0 auto;padding:0 2rem}
+.btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.9rem 2rem;border-radius:100px;font-weight:600;transition:all 0.4s;cursor:pointer;text-decoration:none;border:none;font-family:var(--ff-body);font-size:0.95rem}
+.btn--primary{background:var(--primary);color:white}
+.btn--primary:hover{background:var(--primary-dim);transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,0.3)}
+.btn--ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.15)}
+.btn--ghost:hover{background:var(--glass);border-color:var(--primary)}
+.badge{display:inline-flex;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);padding:0.4rem 1rem;border-radius:100px;font-size:0.8rem;color:var(--primary);font-weight:500;margin-bottom:1.5rem;font-family:var(--ff-body);letter-spacing:0.5px}
+.section-label{text-align:center;margin-bottom:3rem}
+.section-label h2{font-family:var(--ff-display);font-size:clamp(2rem,5vw,4rem);font-weight:700;letter-spacing:-1px;margin-bottom:0.75rem}
+.section-label p{color:var(--muted);font-size:clamp(0.95rem,1.2vw,1.1rem);max-width:600px;margin:0 auto;line-height:1.7}
+.reveal{opacity:0;transform:translateY(40px);transition:all 0.8s cubic-bezier(0.16,1,0.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+/* Loading Screen */
+#loader{position:fixed;inset:0;z-index:9999;background:var(--dark);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;transition:opacity 0.8s,visibility 0.8s}
+#loader.hidden{opacity:0;visibility:hidden}
+.loader-ring{width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.06);border-top-color:var(--primary);animation:spin 0.9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{font-family:var(--ff-display);font-size:1.2rem;color:var(--muted);letter-spacing:4px;text-transform:uppercase}
+.loader-dots{display:flex;gap:6px}
+.loader-dots span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:dotPulse 1.4s ease-in-out infinite}
+.loader-dots span:nth-child(2){animation-delay:0.2s}
+.loader-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes dotPulse{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1.2)}}
+
+/* Particles Canvas */
+#particles-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* Cursor Glow */
+.cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:opacity 0.3s}
+@media(hover:none)and (pointer:coarse){.cursor-glow{display:none}}
+
+/* Navigation */
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:1rem 2rem;transition:all 0.5s;background:transparent}
+.nav.scrolled{background:rgba(8,12,20,0.85);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-bottom:1px solid rgba(255,255,255,0.04)}
+.nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--ff-display);font-size:1.4rem;font-weight:700;color:var(--text);text-decoration:none;letter-spacing:-0.5px}
+.nav-logo span{color:var(--primary)}
+.nav-links{display:flex;align-items:center;gap:0.25rem;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.85rem;font-weight:500;padding:0.5rem 1rem;border-radius:8px;transition:all 0.3s;white-space:nowrap}
+.nav-links a:hover{color:var(--text);background:var(--glass)}
+.nav-links .btn--primary{padding:0.6rem 1.5rem;font-size:0.85rem}
+.nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:none;border:none}
+.nav-hamburger span{width:24px;height:2px;background:var(--text);border-radius:2px;transition:all 0.3s;display:block}
+@media(max-width:868px){
+.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:rgba(8,12,20,0.98);backdrop-filter:blur(24px);flex-direction:column;padding:6rem 2rem 2rem;gap:0.5rem;transition:right 0.5s cubic-bezier(0.16,1,0.3,1);border-left:1px solid rgba(255,255,255,0.06)}
+.nav-links.open{right:0}
+.nav-links a{width:100%;padding:0.8rem 1rem;font-size:0.95rem}
+.nav-links .btn{width:100%;justify-content:center;margin-top:0.5rem}
+.nav-hamburger{display:flex}
+.nav-hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.nav-hamburger.open span:nth-child(2){opacity:0}
+.nav-hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+}
+
+/* Footer */
+.footer{background:var(--navy);border-top:1px solid rgba(255,255,255,0.04);padding:5rem 0 2rem;position:relative;z-index:1}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:3rem}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr;gap:2rem}}
+.footer-brand p{color:var(--muted);font-size:0.9rem;line-height:1.7;max-width:360px;margin-top:1rem}
+.footer-heading{font-family:var(--ff-display);font-size:1rem;font-weight:600;margin-bottom:1.25rem;color:var(--text)}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:0.6rem}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;transition:color 0.3s}
+.footer-links a:hover{color:var(--primary)}
+.footer-bottom{padding-top:2rem;border-top:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.footer-bottom p{color:var(--muted);font-size:0.85rem}
+
+/* Blog Hero */
+.blog-hero{min-height:50vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;padding:10rem 0 4rem}
+.blog-hero-bg{position:absolute;inset:0;z-index:0}
+.blog-hero-bg .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:60px 60px}
+.blog-hero-bg .gradient-1{position:absolute;top:-20%;left:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,0.08) 0%,transparent 70%)}
+.blog-hero-bg .gradient-2{position:absolute;bottom:-30%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(245,158,11,0.05) 0%,transparent 70%)}
+.blog-hero-content{position:relative;z-index:1;max-width:700px}
+.blog-hero-content h1{font-family:var(--ff-display);font-size:clamp(2.5rem,6vw,5rem);font-weight:700;letter-spacing:-2px;line-height:1.08;margin-bottom:1rem}
+.blog-hero-content p{color:var(--muted);font-size:clamp(1rem,1.3vw,1.15rem);line-height:1.7}
+
+/* Featured Article */
+.featured-card{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;background:var(--glass);border:1px solid rgba(255,255,255,0.06);border-radius:20px;overflow:hidden;transition:all 0.4s}
+.featured-card:hover{border-color:rgba(99,102,241,0.2);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.featured-card-visual{min-height:320px;position:relative;overflow:hidden;background:var(--navy)}
+.featured-card-visual svg{width:100%;height:100%;position:absolute;inset:0}
+.featured-card-body{padding:2.5rem 2.5rem 2.5rem 0;display:flex;flex-direction:column;gap:1rem}
+@media(max-width:868px){.featured-card{grid-template-columns:1fr}.featured-card-body{padding:2rem}.featured-card-visual{min-height:220px}}
+.featured-card-body .post-category{display:inline-flex;padding:0.3rem 0.8rem;border-radius:100px;font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);color:var(--cyan);width:fit-content}
+.featured-card-body .post-date{color:var(--muted);font-size:0.85rem}
+.featured-card-body h3{font-family:var(--ff-display);font-size:clamp(1.3rem,2vw,1.8rem);font-weight:700;letter-spacing:-0.5px;line-height:1.3}
+.featured-card-body p{color:var(--muted);font-size:0.95rem;line-height:1.7}
+.featured-card-body .read-more{color:var(--primary);text-decoration:none;font-weight:600;font-size:0.9rem;display:inline-flex;align-items:center;gap:0.5rem;transition:gap 0.3s;width:fit-content}
+.featured-card-body .read-more:hover{gap:0.75rem}
+
+/* Blog Grid */
+.blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:1024px){.blog-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.blog-grid{grid-template-columns:1fr}}
+.blog-card{background:var(--glass);border:1px solid rgba(255,255,255,0.06);border-radius:16px;overflow:hidden;transition:all 0.4s;display:flex;flex-direction:column}
+.blog-card:hover{border-color:rgba(99,102,241,0.2);transform:translateY(-6px);box-shadow:0 16px 48px rgba(0,0,0,0.3)}
+.blog-card-visual{height:200px;position:relative;overflow:hidden;background:var(--navy)}
+.blog-card-visual svg{width:100%;height:100%;position:absolute;inset:0}
+.blog-card-body{padding:1.5rem;flex:1;display:flex;flex-direction:column;gap:0.6rem}
+.blog-card-body .post-category{display:inline-flex;padding:0.25rem 0.7rem;border-radius:100px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;width:fit-content}
+.blog-card-body .post-date{color:var(--muted);font-size:0.8rem}
+.blog-card-body h4{font-family:var(--ff-display);font-size:1.05rem;font-weight:600;letter-spacing:-0.3px;line-height:1.35}
+.blog-card-body p{color:var(--muted);font-size:0.88rem;line-height:1.6;flex:1}
+.blog-card-body .read-more{color:var(--primary);text-decoration:none;font-weight:600;font-size:0.85rem;display:inline-flex;align-items:center;gap:0.4rem;transition:gap 0.3s;width:fit-content;margin-top:auto;padding-top:0.5rem}
+.blog-card-body .read-more:hover{gap:0.65rem}
+
+/* Newsletter */
+.newsletter-section{background:var(--navy);border-top:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04)}
+.newsletter-wrap{max-width:560px;margin:0 auto;text-align:center}
+.newsletter-wrap h2{font-family:var(--ff-display);font-size:clamp(1.5rem,3vw,2.5rem);font-weight:700;letter-spacing:-1px;margin-bottom:0.75rem}
+.newsletter-wrap p{color:var(--muted);margin-bottom:2rem;line-height:1.7}
+.newsletter-form{display:flex;gap:0.75rem;max-width:460px;margin:0 auto}
+.newsletter-form input{flex:1;padding:0.9rem 1.25rem;border-radius:100px;border:1px solid rgba(255,255,255,0.1);background:var(--surface);color:var(--text);font-family:var(--ff-body);font-size:0.9rem;outline:none;transition:border-color 0.3s}
+.newsletter-form input:focus{border-color:var(--primary)}
+.newsletter-form input::placeholder{color:var(--muted)}
+.newsletter-status{margin-top:12px;font-size:0.9rem;min-height:1.3em;text-align:center;transition:opacity 0.3s}
+.newsletter-status.success{color:var(--cyan)}
+.newsletter-status.error{color:#ef4444}
+@media(max-width:480px){.newsletter-form{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div id="loader">
+<div class="loader-ring"></div>
+<div class="loader-text">FocusFrame</div>
+<div class="loader-dots"><span></span><span></span><span></span></div>
+</div>
+
+<canvas id="particles-canvas"></canvas>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<nav class="nav" id="nav">
+<div class="nav-inner">
+<a href="index.html" class="nav-logo">Focus<span>Frame</span></a>
+<button class="nav-hamburger" id="hamburger" aria-label="Toggle menu">
+<span></span><span></span><span></span>
+</button>
+<ul class="nav-links" id="navLinks">
+<li><a href="index.html#problem">The Problem</a></li>
+<li><a href="index.html#features">Features</a></li>
+<li><a href="index.html#how-it-works">How It Works</a></li>
+<li><a href="index.html#faq">FAQ</a></li>
+<li><a href="pricing.html">Pricing</a></li>
+<li><a href="about.html">Company</a></li>
+<li><a href="pricing.html" class="btn btn--primary">Buy Now</a></li>
+</ul>
+</div>
+</nav>
+
+<main>
+<section class="blog-hero">
+<div class="blog-hero-bg">
+<div class="grid"></div>
+<div class="gradient-1"></div>
+<div class="gradient-2"></div>
+</div>
+<div class="blog-hero-content reveal">
+<span class="badge">Insights</span>
+<h1>The FocusFrame Blog.</h1>
+<p>Thoughts on eye health, digital wellness, and the future of focus.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="container">
+<div class="reveal">
+<div class="featured-card">
+<div class="featured-card-visual">
+<svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="fg1" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="rgba(99,102,241,0.15)"/>
+<stop offset="100%" stop-color="rgba(6,182,212,0.05)"/>
+</linearGradient>
+<linearGradient id="fg2" x1="100%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="rgba(245,158,11,0.1)"/>
+<stop offset="100%" stop-color="rgba(99,102,241,0.08)"/>
+</linearGradient>
+</defs>
+<rect fill="var(--navy,#0a0f1e)" width="600" height="400"/>
+<circle cx="200" cy="200" r="180" fill="url(#fg1)"/>
+<circle cx="450" cy="150" r="140" fill="url(#fg2)"/>
+<circle cx="300" cy="250" r="100" fill="rgba(99,102,241,0.04)"/>
+<circle cx="150" cy="120" r="60" fill="none" stroke="rgba(99,102,241,0.08)" stroke-width="1"/>
+<circle cx="480" cy="320" r="80" fill="none" stroke="rgba(6,182,212,0.06)" stroke-width="1"/>
+<line x1="0" y1="200" x2="600" y2="200" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+<line x1="300" y1="0" x2="300" y2="400" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+<polygon points="300,80 340,160 420,160 360,220 380,300 300,250 220,300 240,220 180,160 260,160" fill="none" stroke="rgba(99,102,241,0.06)" stroke-width="1"/>
+<circle cx="300" cy="200" r="4" fill="var(--primary,#6366f1)"/>
+</svg>
+</div>
+<div class="featured-card-body">
+<span class="post-date">May 15, 2026</span>
+<span class="post-category">Eye Health</span>
+<h3>The Hidden Cost of Blue Light: What the Research Actually Says</h3>
+<p>A deep dive into the latest peer-reviewed studies on blue light exposure, circadian rhythms, and the surprising impact on long-term vision health.</p>
+<a href="https://www.brightfocus.org/news/new-research-links-blue-light-to-macular-degeneration-risk-antioxidants-may-offer-hope" target="_blank" rel="noopener" class="read-more">Read More
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="container">
+<div class="section-label reveal">
+<h2>Latest Articles</h2>
+<p>Curated insights on eye health, product design, and the science of focus.</p>
+</div>
+<div class="blog-grid">
+<article class="blog-card reveal">
+<div class="blog-card-visual">
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+<rect fill="var(--navy,#0a0f1e)" width="400" height="240"/>
+<circle cx="120" cy="120" r="100" fill="rgba(99,102,241,0.08)"/>
+<circle cx="280" cy="160" r="80" fill="rgba(245,158,11,0.05)"/>
+<path d="M0 240 Q100 180 200 220 Q300 260 400 200" fill="none" stroke="rgba(99,102,241,0.06)" stroke-width="1"/>
+<circle cx="200" cy="120" r="3" fill="var(--primary,#6366f1)"/>
+</svg>
+</div>
+<div class="blog-card-body">
+<span class="post-date">May 8, 2026</span>
+<span class="post-category" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);color:var(--amber)">Wellness</span>
+<h4>5 Signs Your Screen Time Is Affecting Your Sleep</h4>
+<p>Recognize the early warning signs of digital eye strain and circadian disruption before they become chronic.</p>
+<a href="https://health.osu.edu/health/mental-health/how-screen-time-affects-your-health" target="_blank" rel="noopener" class="read-more">Read<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+</article>
+
+<article class="blog-card reveal">
+<div class="blog-card-visual">
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+<rect fill="var(--navy,#0a0f1e)" width="400" height="240"/>
+<circle cx="300" cy="80" r="120" fill="rgba(6,182,212,0.06)"/>
+<circle cx="100" cy="180" r="90" fill="rgba(99,102,241,0.06)"/>
+<line x1="0" y1="120" x2="400" y2="120" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+<rect x="150" y="80" width="100" height="80" rx="12" fill="none" stroke="rgba(99,102,241,0.08)" stroke-width="1"/>
+<circle cx="200" cy="120" r="4" fill="var(--cyan,#06b6d4)"/>
+</svg>
+</div>
+<div class="blog-card-body">
+<span class="post-date">April 28, 2026</span>
+<span class="post-category" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:var(--primary)">Product</span>
+<h4>Why We Built Silent Touch Instead of Voice Control</h4>
+<p>Voice assistants are intrusive. Here&rsquo;s why we chose haptic touch for controlling your FocusFrame.</p>
+<a href="#" class="read-more">Read<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+</article>
+
+<article class="blog-card reveal">
+<div class="blog-card-visual">
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+<rect fill="var(--navy,#0a0f1e)" width="400" height="240"/>
+<circle cx="200" cy="120" r="80" fill="rgba(99,102,241,0.06)"/>
+<circle cx="200" cy="120" r="50" fill="rgba(99,102,241,0.04)"/>
+<circle cx="200" cy="120" r="20" fill="none" stroke="var(--primary,#6366f1)" stroke-width="1" opacity="0.3"/>
+<line x1="200" y1="40" x2="200" y2="200" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+<line x1="100" y1="120" x2="300" y2="120" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+</svg>
+</div>
+<div class="blog-card-body">
+<span class="post-date">April 15, 2026</span>
+<span class="post-category" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:var(--primary)">Product</span>
+<h4>FocusFrame vs. Traditional Blue-Light Glasses</h4>
+<p>A full comparison of adaptive lens technology against conventional blue-light filtering solutions.</p>
+<a href="#" class="read-more">Read<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+</article>
+
+<article class="blog-card reveal">
+<div class="blog-card-visual">
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+<rect fill="var(--navy,#0a0f1e)" width="400" height="240"/>
+<circle cx="80" cy="80" r="60" fill="rgba(6,182,212,0.06)"/>
+<circle cx="320" cy="180" r="70" fill="rgba(99,102,241,0.06)"/>
+<path d="M80 80 Q200 40 320 180" fill="none" stroke="rgba(99,102,241,0.05)" stroke-width="1"/>
+<path d="M80 80 L200 120 L320 180" fill="none" stroke="rgba(6,182,212,0.04)" stroke-width="1"/>
+<circle cx="200" cy="120" r="3" fill="var(--cyan,#06b6d4)"/>
+</svg>
+</div>
+<div class="blog-card-body">
+<span class="post-date">March 30, 2026</span>
+<span class="post-category" style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);color:var(--cyan)">Technology</span>
+<h4>How Adaptive Lenses Actually Work</h4>
+<p>The technology behind lenses that automatically adjust to ambient light and screen conditions.</p>
+<a href="https://www.allaboutvision.com/eyewear/eyeglasses/lenses/photochromic/" target="_blank" rel="noopener" class="read-more">Read<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+</article>
+
+<article class="blog-card reveal">
+<div class="blog-card-visual">
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+<rect fill="var(--navy,#0a0f1e)" width="400" height="240"/>
+<circle cx="100" cy="180" r="100" fill="rgba(245,158,11,0.05)"/>
+<circle cx="300" cy="60" r="80" fill="rgba(99,102,241,0.05)"/>
+<rect x="160" y="100" width="80" height="40" rx="6" fill="none" stroke="rgba(245,158,11,0.08)" stroke-width="1"/>
+<rect x="170" y="110" width="20" height="20" rx="3" fill="rgba(99,102,241,0.06)"/>
+<rect x="200" y="110" width="20" height="20" rx="3" fill="rgba(99,102,241,0.06)"/>
+</svg>
+</div>
+<div class="blog-card-body">
+<span class="post-date">March 18, 2026</span>
+<span class="post-category" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);color:var(--amber)">Lifestyle</span>
+<h4>Digital Minimalism: 3 Tools That Changed How We Work</h4>
+<p>Our team&rsquo;s curated toolkit for reducing digital noise and reclaiming deep focus in a distracted world.</p>
+<a href="https://www.configurationconnection.com/reclaim-your-time-focus-with-digital-minimalism" target="_blank" rel="noopener" class="read-more">Read<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+</article>
+
+<article class="blog-card reveal">
+<div class="blog-card-visual">
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+<rect fill="var(--navy,#0a0f1e)" width="400" height="240"/>
+<circle cx="200" cy="120" r="100" fill="rgba(99,102,241,0.06)"/>
+<polygon points="200,60 240,100 220,150 180,150 160,100" fill="none" stroke="rgba(99,102,241,0.08)" stroke-width="1"/>
+<circle cx="200" cy="105" r="3" fill="var(--primary,#6366f1)"/>
+<line x1="60" y1="200" x2="340" y2="200" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+</svg>
+</div>
+<div class="blog-card-body">
+<span class="post-date">March 5, 2026</span>
+<span class="post-category" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:var(--primary)">Company</span>
+<h4>Qatar&rsquo;s Growing Role in Health-Tech Innovation</h4>
+<p>How FocusFrame is contributing to Qatar&rsquo;s vision of becoming a global hub for health technology.</p>
+<a href="#" class="read-more">Read<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+</article>
+</div>
+</div>
+</section>
+
+<section class="newsletter-section section">
+<div class="container">
+<div class="newsletter-wrap reveal">
+<h2>Stay in the loop.</h2>
+<p>Get the latest articles, product updates, and exclusive offers delivered to your inbox.</p>
+<form class="newsletter-form" id="newsletterForm">
+<input type="email" id="newsletterEmail" placeholder="Enter your email" required>
+<button type="submit" class="btn btn--primary">Subscribe</button>
+</form>
+<div id="newsletterStatus" class="newsletter-status"></div>
+</div>
+</div>
+</section>
+</main>
+
+<footer class="footer">
+<div class="container">
+<div class="footer-grid">
+<div class="footer-brand">
+<a href="index.html" class="nav-logo" style="font-size:1.4rem">Focus<span>Frame</span></a>
+<p>Protect your eyes. Reclaim your time.</p>
+</div>
+<div>
+<div class="footer-heading">Product</div>
+<ul class="footer-links">
+<li><a href="index.html#features">Features</a></li>
+<li><a href="index.html#how-it-works">How It Works</a></li>
+<li><a href="index.html#faq">FAQ</a></li>
+<li><a href="pricing.html">Pricing</a></li>
+</ul>
+</div>
+<div>
+<div class="footer-heading">Company</div>
+<ul class="footer-links">
+<li><a href="about.html">About</a></li>
+<li><a href="blog.html">Blog</a></li>
+<li><a href="careers.html">Careers</a></li>
+<li><a href="press.html">Press</a></li>
+</ul>
+</div>
+</div>
+<div class="footer-bottom">
+<p>&copy; 2026 FocusFrame. All rights reserved.</p>
+</div>
+</div>
+</footer>
+
+<script>
+// Loading screen
+window.addEventListener('load',function(){setTimeout(function(){document.getElementById('loader').classList.add('hidden')},600)});
+
+// Particles
+(function(){var c=document.getElementById('particles-canvas'),ctx=c.getContext('2d'),particles=[],w,h;function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}resize();window.addEventListener('resize',resize);for(var i=0;i<50;i++){particles.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:Math.random()*2+1,o:Math.random()*0.4+0.1})}function draw(){ctx.clearRect(0,0,w,h);for(var i=0;i<particles.length;i++){var p=particles[i];p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(99,102,241,'+p.o+')';ctx.fill()}requestAnimationFrame(draw)}draw()})();
+
+// Cursor glow
+(function(){var g=document.getElementById('cursorGlow');document.addEventListener('mousemove',function(e){g.style.left=e.clientX+'px';g.style.top=e.clientY+'px'});document.addEventListener('mouseleave',function(){g.style.opacity='0'});document.addEventListener('mouseenter',function(){g.style.opacity='1'})})();
+
+// Nav scroll
+var nav=document.getElementById('nav');window.addEventListener('scroll',function(){if(window.scrollY>60){nav.classList.add('scrolled')}else{nav.classList.remove('scrolled')}});
+
+// Mobile nav
+var hamburger=document.getElementById('hamburger'),navLinks=document.getElementById('navLinks');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navLinks.classList.toggle('open')});navLinks.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){hamburger.classList.remove('open');navLinks.classList.remove('open')})});
+
+// IntersectionObserver reveals
+var reveals=document.querySelectorAll('.reveal');var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible')}})},{threshold:0.1});reveals.forEach(function(r){observer.observe(r)});
+
+// Smooth scroll for anchors
+document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){var t=document.querySelector(this.getAttribute('href'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}})});
+
+// Newsletter form — submits to local backend server
+document.getElementById('newsletterForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var status = document.getElementById('newsletterStatus');
+  var email = document.getElementById('newsletterEmail').value.trim();
+  if (!email) return;
+  status.className = 'newsletter-status';
+  status.textContent = 'Subscribing...';
+  fetch('/api/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email })
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.success) {
+      status.className = 'newsletter-status success';
+      if (data.message === 'Already subscribed') {
+        status.textContent = 'You\u2019re already subscribed!';
+      } else {
+        status.textContent = 'Thank you for subscribing!';
+        document.getElementById('newsletterEmail').value = '';
+      }
+    } else {
+      status.className = 'newsletter-status error';
+      status.textContent = data.error || 'Something went wrong. Try again.';
+    }
+  }).catch(function() {
+    status.className = 'newsletter-status error';
+    status.textContent = 'Server unavailable. Make sure the backend is running.';
+  });
+});
+
+// Weekly article rotation
+(function(){var S=[{f:{d:"May 26, 2026",c:"Eye Health",t:"The Hidden Cost of Blue Light: What the Research Actually Says",b:"A deep dive into the latest peer-reviewed studies on blue light exposure, circadian rhythms, and the surprising impact on long-term vision health.",u:"https://www.brightfocus.org/news/new-research-links-blue-light-to-macular-degeneration-risk-antioxidants-may-offer-hope"},g:[{d:"May 22, 2026",c:"Wellness",t:"5 Signs Your Screen Time Is Affecting Your Sleep",b:"Recognize the early warning signs of digital eye strain and circadian disruption before they become chronic.",u:"https://health.osu.edu/health/mental-health/how-screen-time-affects-your-health"},{d:"May 18, 2026",c:"Product",t:"Why We Built Silent Touch Instead of Voice Control",b:"Voice assistants are intrusive. Here\u2019s why we chose haptic touch for controlling your FocusFrame.",u:"#"},{d:"May 14, 2026",c:"Product",t:"FocusFrame vs. Traditional Blue-Light Glasses",b:"A full comparison of adaptive lens technology against conventional blue-light filtering solutions.",u:"#"},{d:"May 10, 2026",c:"Technology",t:"How Adaptive Lenses Actually Work",b:"The technology behind lenses that automatically adjust to ambient light and screen conditions.",u:"https://www.allaboutvision.com/eyewear/eyeglasses/lenses/photochromic/"},{d:"May 6, 2026",c:"Lifestyle",t:"Digital Minimalism: 3 Tools That Changed How We Work",b:"Our team\u2019s curated toolkit for reducing digital noise and reclaiming deep focus in a distracted world.",u:"https://www.configurationconnection.com/reclaim-your-time-focus-with-digital-minimalism"},{d:"May 2, 2026",c:"Company",t:"Qatar\u2019s Growing Role in Health-Tech Innovation",b:"How FocusFrame is contributing to Qatar\u2019s vision of becoming a global hub for health technology.",u:"#"}]},{f:{d:"May 25, 2026",c:"Eye Health",t:"Effective Tips for Reducing Eye Strain",b:"A Harvard Health guide to recognizing and preventing digital eye strain with simple daily habits and workspace adjustments.",u:"https://www.health.harvard.edu/healthy-aging-and-longevity/effective-tips-for-reducing-eye-strain"},g:[{d:"May 21, 2026",c:"Wellness",t:"Deep Work: A Framework for Focus in the Age of Distraction",b:"Understanding deep work and how creating distraction-free environments can dramatically improve cognitive output.",u:"https://www.autonomous.ai/ourblog/deep-work"},{d:"May 17, 2026",c:"Product",t:"How FocusFrame Protects Your Vision",b:"A look at the multi-layer eye protection built into every pair of FocusFrame smart glasses.",u:"#"},{d:"May 13, 2026",c:"Product",t:"Inside the FocusFrame Lens Technology",b:"From substrate materials to adaptive coatings\u2014what makes our lenses different from conventional eyewear.",u:"#"},{d:"May 9, 2026",c:"Technology",t:"Google\u2019s Latest Smart Glasses Patent: What It Means",b:"An analysis of Google\u2019s newly patented smart glasses with display, speaker, and eye-tracking capabilities.",u:"https://www.androidheadlines.com/2024/12/google-patents-smart-glasses-with-display-speaker-eye-tracking.html"},{d:"May 5, 2026",c:"Lifestyle",t:"What Is Deep Work? A Complete Guide",b:"The Asana guide to deep work: why distraction-free concentration is the most valuable skill in the modern workplace.",u:"https://asana.com/resources/what-is-deep-work"},{d:"May 1, 2026",c:"Company",t:"FocusFrame\u2019s Journey from Concept to Product",b:"The story of how our team turned an idea about better digital wellness into a reality.",u:"#"}]},{f:{d:"May 24, 2026",c:"Eye Health",t:"Screen Use for Kids: What Parents Need to Know",b:"The American Academy of Ophthalmology shares guidance on managing children\u2019s screen time for healthy eye development.",u:"https://www.aao.org/eye-health/tips-prevention/screen-use-kids"},g:[{d:"May 20, 2026",c:"Wellness",t:"The Impact of Screen Time on Mental Wellness",b:"How screen time and blue light exposure before bed interfere with sleep patterns and emotional regulation.",u:"https://www.slatetherapy.com/blog-slate/the-impact-of-sleep-and-screen-time-on-mental-wellness"},{d:"May 16, 2026",c:"Product",t:"Why FocusFrame Chose Adaptive Lenses",b:"The engineering trade-offs behind our decision to use photochromic technology over electronic dimming.",u:"#"},{d:"May 12, 2026",c:"Product",t:"FocusFrame Battery Life: What to Expect",b:"A detailed breakdown of power consumption and battery optimization in the FocusFrame smart glasses.",u:"#"},{d:"May 8, 2026",c:"Technology",t:"Photochromic Lenses: Types, Pros & Cons",b:"A comprehensive comparison of the different photochromic lens technologies available in 2026.",u:"https://www.visioncenter.org/eyeglasses/photochromic-lenses/"},{d:"May 4, 2026",c:"Lifestyle",t:"Digital Minimalism in 2026: Reclaiming Your Focus",b:"Practical strategies for reducing digital noise and building a more intentional relationship with technology.",u:"https://mybestday.ai/blog/digital-minimalism-focus-2025"},{d:"May 1, 2026",c:"Company",t:"Building the Future of Vision Technology in Qatar",b:"How FocusFrame is leveraging Doha\u2019s growing tech ecosystem to pioneer the next generation of eyewear.",u:"#"}]},{f:{d:"May 23, 2026",c:"Eye Health",t:"Eye Strain: Symptoms, Causes & Treatment",b:"The Cleveland Clinic\u2019s complete guide to eye strain, including digital eye strain causes and when to see a doctor.",u:"https://my.clevelandclinic.org/health/diseases/21059-eye-strain"},g:[{d:"May 19, 2026",c:"Wellness",t:"Screen Time, Sleep and Mental Health: What Research Shows",b:"New research from Texas A&M reveals the mediating role of sleep between screen time and adolescent mental health.",u:"https://vitalrecord.tamu.edu/researchers-assess-relationships-between-screen-time-sleep-and-mental-health-in-american-teens"},{d:"May 15, 2026",c:"Product",t:"Is FocusFrame Water Resistant?",b:"Understanding the durability and water resistance ratings of your FocusFrame smart glasses.",u:"#"},{d:"May 11, 2026",c:"Product",t:"Designing for Comfort: The FocusFrame Fit",b:"How we engineered a lightweight, comfortable frame that stays secure during all-day wear.",u:"#"},{d:"May 7, 2026",c:"Technology",t:"Transition Lenses: Pros and Cons",b:"The American Academy of Ophthalmology weighs the benefits and drawbacks of photochromic lenses for daily wear.",u:"https://www.aao.org/eye-health/tips-prevention/pros-cons-of-transitions-lenses"},{d:"May 3, 2026",c:"Lifestyle",t:"The Art of Digital Productivity in a Distracted World",b:"Strategies for thriving amid constant connectivity, with techniques for focused work and intentional tech use.",u:"https://www.wordraptor.com/blog/productivity-digital-age"},{d:"May 1, 2026",c:"Company",t:"FocusFrame\u2019s Commitment to Quality and Craftsmanship",b:"Our approach to materials, testing, and quality assurance that ensures every pair meets exacting standards.",u:"#"}]}];function C(a){if(a==="Wellness"||a==="Lifestyle")return{cl:"var(--amber)",bg:"rgba(245,158,11,0.1)",bo:"rgba(245,158,11,0.2)"};if(a==="Technology")return{cl:"var(--cyan)",bg:"rgba(6,182,212,0.1)",bo:"rgba(6,182,212,0.2)"};return{cl:"var(--primary)",bg:"rgba(99,102,241,0.1)",bo:"rgba(99,102,241,0.2)"}}var n=new Date,s=new Date(n.getFullYear(),0,1),w=Math.ceil((n-s)/604800000),x=w%S.length,p=S[x],F=document.querySelector(".featured-card-body");if(F){F.querySelector(".post-date").textContent=p.f.d;F.querySelector(".post-category").textContent=p.f.c;F.querySelector("h3").textContent=p.f.t;F.querySelector("p").textContent=p.f.b;F.querySelector(".read-more").href=p.f.u}var C2=document.querySelectorAll(".blog-card");for(var i=0;i<C2.length&&i<p.g.length;i++){var B=C2[i],D=p.g[i],E=B.querySelector(".blog-card-body");if(!E)continue;E.querySelector(".post-date").textContent=D.d;var A=E.querySelector(".post-category"),T=C(D.c);A.textContent=D.c;A.style.cssText="background:"+T.bg+";border:1px solid "+T.bo+";color:"+T.cl;E.querySelector("h4").textContent=D.t;E.querySelector("p").textContent=D.b;E.querySelector(".read-more").href=D.u}})();
+</script>
+</body>
+</html>

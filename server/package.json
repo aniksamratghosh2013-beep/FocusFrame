@@ -1,0 +1,10 @@
+{
+  "name": "focusframe-server",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^4.21.0",
+    "nodemailer": "^8.0.8"
+  }
+}
