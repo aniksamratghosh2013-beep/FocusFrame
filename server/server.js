@@ -62,17 +62,24 @@ app.post('/api/chat', async function(req, res) {
 
   var fullMessages = [{ role: 'system', content: systemMsg }].concat(messages);
 
-  try {
-    var response = await deepseek.chat.completions.create({
-      model: 'deepseek-chat',
-      max_tokens: 1024,
-      messages: fullMessages
-    });
-    return res.json({ reply: response.choices[0].message.content });
-  } catch (err) {
-    console.error('DeepSeek API error:', err.message);
-    res.status(500).json({ reply: 'Sorry, Dasher had trouble connecting. Please try again.' });
+  var modelsToTry = ['deepseek-chat', 'deepseek-reasoner'];
+  var lastError = '';
+
+  for (var mi = 0; mi < modelsToTry.length; mi++) {
+    try {
+      var response = await deepseek.chat.completions.create({
+        model: modelsToTry[mi],
+        max_tokens: 1024,
+        messages: fullMessages
+      });
+      return res.json({ reply: response.choices[0].message.content });
+    } catch (err) {
+      lastError = err.message;
+    }
   }
+
+  console.error('DeepSeek error:', lastError);
+  res.json({ reply: 'Dasher error: ' + lastError });
 });
 
 app.listen(PORT, function() {
