@@ -58,19 +58,25 @@ app.post('/api/chat', async function(req, res) {
 
   var anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-  try {
-    var response = await anthropic.messages.create({
-      model: 'claude-opus-4-7',
-      max_tokens: 1024,
-      system: 'You are Dasher, a helpful AI assistant for the FocusFrame website. You are powered by Claude Opus 4.7. Your role is to help users understand the product, navigate the site, and find what they need.\n\nAlways be friendly, concise, and enthusiastic about FocusFrame.\n\nWhen a user is looking for a specific page, provide a direct link like <a href="/pricing.html">Pricing</a>.\n\nHere is the site information you know:\n' + SITE_INFO + '\n\nIf a user asks about something not related to FocusFrame, politely redirect them back to the website topic.',
-      messages: messages
-    });
+  var modelsToTry = ['claude-opus-4-7', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229'];
+  var lastError = '';
 
-    res.json({ reply: response.content[0].text });
-  } catch (err) {
-    console.error('Claude API error:', err.message);
-    res.status(500).json({ reply: 'Sorry, Dasher is having trouble connecting. Please try again.' });
+  for (var mi = 0; mi < modelsToTry.length; mi++) {
+    try {
+      var response = await anthropic.messages.create({
+        model: modelsToTry[mi],
+        max_tokens: 1024,
+        system: 'You are Dasher, a helpful AI assistant for the FocusFrame website. You are powered by Claude. Your role is to help users understand the product, navigate the site, and find what they need.\n\nAlways be friendly, concise, and enthusiastic about FocusFrame.\n\nWhen a user is looking for a specific page, provide a direct link like <a href="/pricing.html">Pricing</a>.\n\nHere is the site information you know:\n' + SITE_INFO + '\n\nIf a user asks about something not related to FocusFrame, politely redirect them back to the website topic.',
+        messages: messages
+      });
+      return res.json({ reply: response.content[0].text });
+    } catch (err) {
+      lastError = err.message;
+    }
   }
+
+  console.error('Claude API error:', lastError);
+  res.status(500).json({ reply: 'Dasher error: ' + lastError });
 });
 
 app.listen(PORT, function() {
