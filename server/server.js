@@ -62,7 +62,7 @@ app.post('/api/chat', async function(req, res) {
 
   var fullMessages = [{ role: 'system', content: systemMsg }].concat(messages);
 
-  var modelsToTry = ['llama3-70b-8192', 'llama3-8b-8192', 'mixtral-8x7b-32768'];
+  var modelsToTry = ['llama-3.1-8b-instant', 'gemma2-9b-it', 'llama-3.3-70b-versatile'];
   var lastError = '';
 
   for (var mi = 0; mi < modelsToTry.length; mi++) {
