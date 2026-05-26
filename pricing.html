@@ -102,24 +102,31 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .pricing-hero p{font-size:clamp(1rem,1.3vw,1.2rem);color:var(--muted);max-width:500px;margin:0 auto}
 
 /* Pricing Cards */
-.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:960px;margin:0 auto}
+.pricing-grid{max-width:700px;margin:0 auto}
 .pricing-card{background:var(--surface);border-radius:24px;padding:3rem 2.5rem;border:1px solid rgba(255,255,255,0.06);position:relative;transition:transform .4s,box-shadow .4s}
 .pricing-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+.pricing-card--glasses{max-width:500px;margin:0 auto;text-align:center;background:linear-gradient(135deg,var(--surface),rgba(99,102,241,0.06))}
 
 .pricing-card .price{font-family:var(--ff-display);font-size:3rem;font-weight:700;letter-spacing:-2px;margin-bottom:.25rem}
 .pricing-card .price-sub{color:var(--muted);font-size:.95rem;margin-bottom:1.5rem}
 .pricing-card .price span{font-size:1.5rem;font-weight:400}
+.price-per{font-size:.9rem!important;color:var(--muted);font-weight:400!important;letter-spacing:0}
 .pricing-features{display:flex;flex-direction:column;gap:.9rem;margin-bottom:2rem}
 .pricing-features li{display:flex;align-items:flex-start;gap:10px;font-size:.9rem;color:var(--muted)}
 .pricing-features li svg{flex-shrink:0;margin-top:2px}
 .pricing-card .btn{width:100%;justify-content:center}
 .pricing-note{text-align:center;margin-top:.75rem;font-size:.8rem;color:var(--muted)}
 
-@media(max-width:768px){
-  .pricing-grid{grid-template-columns:1fr}
-}
+.subscription-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:800px;margin:2rem auto 0}
+.pricing-card--featured{border-color:rgba(99,102,241,0.3);background:linear-gradient(135deg,var(--surface),rgba(99,102,241,0.08))}
+.pricing-card--featured .price{color:var(--primary)}
+.pricing-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--primary),var(--indigo));color:#fff;font-size:.75rem;font-weight:600;padding:.35rem 1.2rem;border-radius:20px;letter-spacing:.5px;text-transform:uppercase}
+.pricing-total{text-align:center;font-size:.85rem;color:var(--muted);margin-bottom:1rem}
+.pricing-saved{color:#22c55e;font-weight:600}
 
-/* Return Policy */
+@media(max-width:768px){
+  .subscription-grid{grid-template-columns:1fr}
+}
 .return-section{text-align:center}
 .return-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;max-width:900px;margin:2rem auto 0}
 .return-item{background:var(--surface);border-radius:16px;padding:2rem;border:1px solid rgba(255,255,255,0.04);transition:transform .3s}
@@ -226,8 +233,8 @@ footer .copyright{margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(2
 <section class="section">
   <div class="container">
     <div class="pricing-grid">
-      <div class="pricing-card reveal">
-        <div class="price">50 <span>QAR</span></div>
+      <div class="pricing-card pricing-card--glasses reveal">
+        <div class="price">300 <span>QAR</span></div>
         <div class="price-sub">One-time purchase</div>
         <ul class="pricing-features">
           <li>
@@ -263,10 +270,19 @@ footer .copyright{margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(2
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </button>
       </div>
-
+    </div>
+    <div class="section-label reveal" style="margin-top:5rem">
+      <div class="badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Technology Plan
+      </div>
+      <h2>Choose your subscription.</h2>
+      <p>Keep your glasses smart with continuous updates and AI features.</p>
+    </div>
+    <div class="pricing-grid subscription-grid">
       <div class="pricing-card reveal">
-        <div class="price">5 <span>QAR</span><span style="font-size:.9rem;color:var(--muted);font-weight:400;letter-spacing:0"> /month</span></div>
-        <div class="price-sub">Subscription</div>
+        <div class="price">12 <span>QAR</span><span class="price-per">/month</span></div>
+        <div class="price-sub">Monthly — Cancel anytime</div>
         <ul class="pricing-features">
           <li>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -293,10 +309,46 @@ footer .copyright{margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(2
             Analytics dashboard
           </li>
         </ul>
-        <button class="btn btn--ghost">Subscribe
+        <div class="pricing-total">144 QAR/year</div>
+        <button class="btn btn--ghost">Choose Monthly
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </button>
-        <p class="pricing-note">Cancel anytime</p>
+      </div>
+
+      <div class="pricing-card pricing-card--featured reveal">
+        <div class="pricing-badge">Best Value</div>
+        <div class="price">10 <span>QAR</span><span class="price-per">/month</span></div>
+        <div class="price-sub">Annual — Billed yearly (120 QAR/yr)</div>
+        <ul class="pricing-features">
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Continuous software updates
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            AI behavior optimization
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Extended cloud sync
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Priority support
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Lens tint scheduling
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Analytics dashboard
+          </li>
+        </ul>
+        <div class="pricing-total">120 QAR/year <span class="pricing-saved">Save 24 QAR</span></div>
+        <button class="btn btn--primary">Choose Annual
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
       </div>
     </div>
   </div>
@@ -408,7 +460,7 @@ footer .copyright{margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(2
           Total yearly cost
         </div>
         <div style="color:#ef4444">400+ QAR</div>
-        <div style="color:#22c55e">50 QAR <span style="font-size:.75rem;font-weight:400;color:var(--muted)">one-time</span></div>
+        <div style="color:#22c55e">300 QAR <span style="font-size:.75rem;font-weight:400;color:var(--muted)">one-time</span></div>
       </div>
     </div>
   </div>
@@ -427,10 +479,10 @@ footer .copyright{margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(2
     <div class="faq-list reveal">
       <div class="faq-item">
         <button class="faq-question">
-          Why 50 QAR vs other smart glasses?
+          Why 300 QAR vs other smart glasses?
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <div class="faq-answer">We cut out retail markups, middlemen, and unnecessary features. FocusFrame delivers the essentials — premium adaptive lenses, silent controls, and titanium build — at a fraction of the cost by selling direct to you.</div>
+        <div class="faq-answer">We cut out retail markups, middlemen, and unnecessary features. FocusFrame delivers premium adaptive lenses, silent controls, and titanium build — at a fraction of the cost by selling direct to you. Competitor smart glasses cost 1000–3000 QAR. At 300 QAR, you get the same core technology for a fraction of the price.</div>
       </div>
       <div class="faq-item">
         <button class="faq-question">
