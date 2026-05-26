@@ -1096,155 +1096,84 @@ ul{list-style:none}
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 
-function buildGlasses(scene, customColor) {
-  const framesColor = customColor ? new THREE.Color(customColor) : 0xe2e8f0;
-  const group = new THREE.Group();
+// Materials (shared between loaded model and procedural extras)
+const frameMat = new THREE.MeshPhysicalMaterial({
+  color: 0xe2e8f0,
+  metalness: 0.4,
+  roughness: 0.15,
+  envMapIntensity: 1.2,
+  clearcoat: 0.3,
+});
+const armMat = new THREE.MeshPhysicalMaterial({
+  color: 0x94a3b8,
+  metalness: 0.6,
+  roughness: 0.3,
+  envMapIntensity: 1.0,
+});
+const lensMat = new THREE.MeshPhysicalMaterial({
+  color: 0x6366f1,
+  transparent: true,
+  opacity: 0.04,
+  roughness: 0,
+  metalness: 0,
+  side: THREE.DoubleSide,
+  envMapIntensity: 0.2,
+  clearcoat: 0.08,
+});
+const sensorMat = new THREE.MeshPhysicalMaterial({
+  color: 0xf59e0b,
+  emissive: 0xf59e0b,
+  emissiveIntensity: 0.5,
+  metalness: 0,
+  roughness: 0.3,
+});
 
-  // Frame material
-  const frameMat = new THREE.MeshPhysicalMaterial({
-    color: framesColor,
-    metalness: 0.4,
-    roughness: 0.15,
-    envMapIntensity: 1.2,
-    clearcoat: 0.3,
-  });
-
-  // Arm material
-  const armMat = new THREE.MeshPhysicalMaterial({
-    color: 0x94a3b8,
-    metalness: 0.6,
-    roughness: 0.3,
-    envMapIntensity: 1.0,
-  });
-
-  // Lens material
-  const lensMat = new THREE.MeshPhysicalMaterial({
-    color: 0x6366f1,
-    transparent: true,
-    opacity: 0.04,
-    roughness: 0,
-    metalness: 0,
-    side: THREE.DoubleSide,
-    envMapIntensity: 0.2,
-    clearcoat: 0.08,
-  });
-
-  // Touch sensor material
-  const sensorMat = new THREE.MeshPhysicalMaterial({
-    color: 0xf59e0b,
-    emissive: 0xf59e0b,
-    emissiveIntensity: 0.5,
-    metalness: 0,
-    roughness: 0.3,
-  });
-
-  // Helper to create elliptical tube frame
-  function createFrame(semiMajor, semiMinor, tubeRadius, segments, radialSegments, posX) {
-    const points = [];
-    for (let i = 0; i <= segments; i++) {
-      const t = (i / segments) * Math.PI * 2;
-      const x = semiMajor * Math.cos(t);
-      const y = semiMinor * Math.sin(t);
-      points.push(new THREE.Vector3(x, y, 0));
+function applyMaterialsToModel(model) {
+  const frameChildren = [];
+  const lensChildren = [];
+  model.traverse((child) => {
+    if (child.isMesh) {
+      const name = child.parent ? child.parent.name : '';
+      if (name.includes('Plane') || name.includes('Lens') || name.includes('lens')) {
+        lensChildren.push(child);
+      } else {
+        frameChildren.push(child);
+      }
     }
-    const curve = new THREE.CatmullRomCurve3(points, true);
-    const geom = new THREE.TubeGeometry(curve, segments, tubeRadius, radialSegments, true);
-    const mesh = new THREE.Mesh(geom, frameMat);
-    mesh.position.x = posX;
-    return mesh;
-  }
+  });
+  frameChildren.forEach((m) => { m.material = frameMat; });
+  lensChildren.forEach((m) => { m.material = lensMat; });
+}
 
-  // Left frame
-  const leftFrame = createFrame(1.5, 1.0, 0.04, 64, 8, -1.5);
-  group.add(leftFrame);
-
-  // Right frame
-  const rightFrame = createFrame(1.5, 1.0, 0.04, 64, 8, 1.5);
-  group.add(rightFrame);
-
-  // Bridge
-  const bridgePts = [
-    new THREE.Vector3(-0.15, 0.15, 0),
-    new THREE.Vector3(0, 0.3, 0.05),
-    new THREE.Vector3(0.15, 0.15, 0)
-  ];
-  const bridgeCurve = new THREE.CatmullRomCurve3(bridgePts);
-  const bridgeGeom = new THREE.TubeGeometry(bridgeCurve, 16, 0.025, 6, false);
-  group.add(new THREE.Mesh(bridgeGeom, frameMat));
-
-  // Left arm
-  const leftArmPts = [
-    new THREE.Vector3(-1.5, 0, 0),
+function addProceduralArms(group) {
+  const createArm = (pts) => {
+    const curve = new THREE.CatmullRomCurve3(pts);
+    const geom = new THREE.TubeGeometry(curve, 20, 0.025, 6, false);
+    return new THREE.Mesh(geom, armMat);
+  };
+  group.add(createArm([
+    new THREE.Vector3(-1.65, 0.05, -0.1),
     new THREE.Vector3(-2.2, 0.02, -0.3),
     new THREE.Vector3(-2.8, 0, -0.8),
     new THREE.Vector3(-3.2, -0.02, -1.2)
-  ];
-  const leftArmCurve = new THREE.CatmullRomCurve3(leftArmPts);
-  const leftArmGeom = new THREE.TubeGeometry(leftArmCurve, 20, 0.025, 6, false);
-  group.add(new THREE.Mesh(leftArmGeom, armMat));
-
-  // Right arm
-  const rightArmPts = [
-    new THREE.Vector3(1.5, 0, 0),
+  ]));
+  group.add(createArm([
+    new THREE.Vector3(1.65, 0.05, -0.1),
     new THREE.Vector3(2.2, 0.02, -0.3),
     new THREE.Vector3(2.8, 0, -0.8),
     new THREE.Vector3(3.2, -0.02, -1.2)
-  ];
-  const rightArmCurve = new THREE.CatmullRomCurve3(rightArmPts);
-  const rightArmGeom = new THREE.TubeGeometry(rightArmCurve, 20, 0.025, 6, false);
-  group.add(new THREE.Mesh(rightArmGeom, armMat));
+  ]));
+}
 
-  // Left lens
-  const lensShape = new THREE.Shape();
-  const a = 1.4, b = 0.93;
-  for (let i = 0; i <= 64; i++) {
-    const t = (i / 64) * Math.PI * 2;
-    const x = a * Math.cos(t);
-    const y = b * Math.sin(t);
-    if (i === 0) lensShape.moveTo(x, y);
-    else lensShape.lineTo(x, y);
-  }
-  const lensGeom = new THREE.ShapeGeometry(lensShape);
-  const leftLens = new THREE.Mesh(lensGeom, lensMat);
-  leftLens.position.set(-1.5, 0, 0);
-  group.add(leftLens);
-
-  const rightLens = new THREE.Mesh(lensGeom.clone(), lensMat);
-  rightLens.position.set(1.5, 0, 0);
-  group.add(rightLens);
-
-  // Nose pads
-  const npGeom = new THREE.SphereGeometry(0.04, 8, 8);
-  const npMat = new THREE.MeshPhysicalMaterial({ color: 0x475569, metalness: 0.3, roughness: 0.5 });
-  const np1 = new THREE.Mesh(npGeom, npMat);
-  np1.position.set(-0.25, -0.3, 0.1);
-  group.add(np1);
-  const np2 = new THREE.Mesh(npGeom.clone(), npMat);
-  np2.position.set(0.25, -0.3, 0.1);
-  group.add(np2);
-
-  // Frame accents
-  const accGeom = new THREE.SphereGeometry(0.02, 6, 6);
-  const accMat = new THREE.MeshPhysicalMaterial({ color: 0x6366f1, emissive: 0x6366f1, emissiveIntensity: 0.2 });
-  const acc1 = new THREE.Mesh(accGeom, accMat);
-  acc1.position.set(-3.0, 0, 0);
-  group.add(acc1);
-  const acc2 = new THREE.Mesh(accGeom.clone(), accMat);
-  acc2.position.set(3.0, 0, 0);
-  group.add(acc2);
-
-  // Touch sensor
-  const sensorGeom = new THREE.SphereGeometry(0.03, 8, 8);
-  const sensor = new THREE.Mesh(sensorGeom, sensorMat);
-  sensor.position.set(2.3, 0.02, -0.5);
-  sensor.userData.isSensor = true;
-  group.add(sensor);
-
-  // Store references for later use
-  group.userData = { lensMat, sensorMat, sensor, sensorGeom, leftLens, rightLens, frameMat };
-
-  return group;
+function addProceduralSensor(group) {
+  const geom = new THREE.SphereGeometry(0.03, 8, 8);
+  const mesh = new THREE.Mesh(geom, sensorMat);
+  mesh.position.set(2.3, 0.02, -0.5);
+  mesh.userData.isSensor = true;
+  group.add(mesh);
+  return mesh;
 }
 
 function initGlasses(containerId, isCustom) {
@@ -1283,15 +1212,57 @@ function initGlasses(containerId, isCustom) {
   pl.position.set(0, -2, 3);
   scene.add(pl);
 
-  // Glasses
-  const color = isCustom ? (container.dataset.color || '#1a1a2e') : null;
-  const glassesGroup = buildGlasses(scene, color);
+  // Glasses group
+  const glassesGroup = new THREE.Group();
   scene.add(glassesGroup);
 
-  // Scale down on mobile
-  if (w < 400 || isCustom) {
-    glassesGroup.scale.setScalar(0.7);
-  }
+  const color = isCustom ? (container.dataset.color || '#1a1a2e') : null;
+
+  // Load model
+  const loader = new ColladaLoader();
+  loader.load('/glasses/model.dae', (collada) => {
+    const model = collada.scene;
+    model.scale.set(0.85, 0.85, 0.85);
+    model.position.set(0, 0, 0);
+    applyMaterialsToModel(model);
+
+    // Clear any existing children (from previous reload)
+    while (glassesGroup.children.length) {
+      glassesGroup.remove(glassesGroup.children[0]);
+    }
+
+    glassesGroup.add(model);
+
+    // Add procedural arm extensions (model may not have arms)
+    addProceduralArms(glassesGroup);
+
+    // Add sensor
+    const sensorMesh = addProceduralSensor(glassesGroup);
+
+    // Apply custom color if set
+    if (color) {
+      const c = new THREE.Color(color);
+      frameMat.color.set(c);
+    }
+
+    // Scale down on mobile
+    if (w < 400 || isCustom) {
+      glassesGroup.scale.setScalar(0.7);
+    }
+
+    // Store sensor ref
+    glassesGroup.userData.sensorMat = sensorMat;
+    glassesGroup.userData.sensor = sensorMesh;
+    glassesGroup.userData.lensMat = lensMat;
+    glassesGroup.userData.frameMat = frameMat;
+
+    // Signal loaded
+    container.dataset.loaded = 'true';
+  }, undefined, () => {
+    // Fallback on load error: build procedural model
+    console.warn('Failed to load 3D model, using procedural fallback');
+    fallbackProcedural(glassesGroup, color, w, isCustom);
+  });
 
   // Controls
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -1308,7 +1279,7 @@ function initGlasses(containerId, isCustom) {
   // Auto-rotation
   let autoRotateTimer = null;
   let isInteracting = false;
-  let autoRotate = false;
+  let autoRotate = true;
 
   function resetAutoRotate() {
     isInteracting = true;
@@ -1328,7 +1299,6 @@ function initGlasses(containerId, isCustom) {
   // Raycaster for sensor click
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
-  let sensorPulse = null;
 
   function onPointerDown(event) {
     const rect2 = renderer.domElement.getBoundingClientRect();
@@ -1339,7 +1309,6 @@ function initGlasses(containerId, isCustom) {
 
     raycaster.setFromCamera(pointer, camera);
 
-    // Find the sensor mesh
     let sensorMesh = null;
     glassesGroup.children.forEach(child => {
       if (child.userData && child.userData.isSensor) {
@@ -1350,7 +1319,7 @@ function initGlasses(containerId, isCustom) {
     if (sensorMesh) {
       const intersects = raycaster.intersectObject(sensorMesh, false);
       if (intersects.length > 0) {
-        triggerSensorPulse(glassesGroup, scene);
+        triggerSensorPulse();
       }
     }
   }
@@ -1362,32 +1331,26 @@ function initGlasses(containerId, isCustom) {
     }
   });
 
-  function triggerSensorPulse(group, scn) {
-    const sensorData = group.userData;
-    if (!sensorData) return;
-
-    // Animate emissive intensity
+  function triggerSensorPulse() {
     const startTime = performance.now();
     const duration = 500;
 
     function animatePulse(time) {
       const elapsed = time - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // 0 -> 1 -> 0
       const intensity = progress < 0.5
         ? 0.5 + (1.5 * (progress * 2))
         : 2.0 - (1.5 * ((progress - 0.5) * 2));
-      sensorData.sensorMat.emissiveIntensity = Math.max(0.5, intensity);
+      sensorMat.emissiveIntensity = Math.max(0.5, intensity);
 
       if (progress < 1) {
         requestAnimationFrame(animatePulse);
       } else {
-        sensorData.sensorMat.emissiveIntensity = 0.5;
+        sensorMat.emissiveIntensity = 0.5;
       }
     }
     requestAnimationFrame(animatePulse);
 
-    // Ring pulse
     const ringGeom = new THREE.RingGeometry(0.04, 0.06, 24);
     const ringMat = new THREE.MeshBasicMaterial({
       color: 0xf59e0b,
@@ -1396,8 +1359,10 @@ function initGlasses(containerId, isCustom) {
       side: THREE.DoubleSide,
     });
     const ring = new THREE.Mesh(ringGeom, ringMat);
-    ring.position.copy(sensorData.sensor.position);
-    scn.add(ring);
+    if (glassesGroup.userData.sensor) {
+      ring.position.copy(glassesGroup.userData.sensor.position);
+    }
+    scene.add(ring);
 
     function animateRing(time) {
       if (!ring.parent) return;
@@ -1409,7 +1374,7 @@ function initGlasses(containerId, isCustom) {
       if (progress < 1) {
         requestAnimationFrame(animateRing);
       } else {
-        scn.remove(ring);
+        scene.remove(ring);
         ringGeom.dispose();
         ringMat.dispose();
       }
@@ -1418,7 +1383,7 @@ function initGlasses(containerId, isCustom) {
   }
 
   // Animation loop
-  function animate() {
+  function animate(time) {
     requestAnimationFrame(animate);
     if (autoRotate && !isInteracting) {
       glassesGroup.rotation.y += 0.003;
@@ -1447,12 +1412,6 @@ function initGlasses(containerId, isCustom) {
       const rect3 = hero.getBoundingClientRect();
       const progress = Math.max(0, Math.min(1, -rect3.top / (rect3.height + window.innerHeight)));
       glassesGroup.rotation.x = progress * 0.15;
-      glassesGroup.material && (glassesGroup.material.opacity = 1 - progress);
-      glassesGroup.children.forEach(child => {
-        if (child.material && child.material.opacity !== undefined && child !== glassesGroup) {
-          // Only affect transparent materials
-        }
-      });
     }
     window.addEventListener('scroll', onScroll, { passive: true });
   }
@@ -1462,41 +1421,34 @@ function initGlasses(containerId, isCustom) {
     renderer, scene, camera, controls, glassesGroup, container,
     setFrameColor(color) {
       const c = new THREE.Color(color);
-      glassesGroup.children.forEach(child => {
-        if (child.material === glassesGroup.userData.frameMat) {
-          child.material.color.set(c);
-        }
-      });
-      glassesGroup.userData.frameMat.color.set(c);
+      frameMat.color.set(c);
     },
     setLensMode(mode) {
-      const lensMat2 = glassesGroup.userData.lensMat;
       if (mode === 'clear') {
-        lensMat2.color.set(0xffffff);
-        lensMat2.opacity = 0.01;
+        lensMat.color.set(0xffffff);
+        lensMat.opacity = 0.01;
       } else {
-        lensMat2.color.set(0x6366f1);
-        lensMat2.opacity = 0.04;
+        lensMat.color.set(0x6366f1);
+        lensMat.opacity = 0.04;
       }
     },
     setEnv(env) {
-      const lensMat2 = glassesGroup.userData.lensMat;
       switch (env) {
         case 'outdoor':
-          lensMat2.color.set(0x1e3a5f);
-          lensMat2.opacity = 0.12;
+          lensMat.color.set(0x1e3a5f);
+          lensMat.opacity = 0.12;
           break;
         case 'night':
-          lensMat2.color.set(0xf59e0b);
-          lensMat2.opacity = 0.2;
+          lensMat.color.set(0xf59e0b);
+          lensMat.opacity = 0.2;
           break;
         case 'warm':
-          lensMat2.color.set(0xf97316);
-          lensMat2.opacity = 0.15;
+          lensMat.color.set(0xf97316);
+          lensMat.opacity = 0.15;
           break;
         default:
-          lensMat2.color.set(0x6366f1);
-          lensMat2.opacity = 0.04;
+          lensMat.color.set(0x6366f1);
+          lensMat.opacity = 0.04;
       }
     },
     dispose() {
@@ -1512,6 +1464,91 @@ function initGlasses(containerId, isCustom) {
 
   container.__threeAPI = api;
   return api;
+}
+
+// Procedural fallback if model fails to load
+function fallbackProcedural(group, customColor, w, isCustom) {
+  const fc = customColor ? new THREE.Color(customColor) : 0xe2e8f0;
+  frameMat.color.set(fc);
+
+  function createEllipseFrame(sx, sy, tr, seg, rSeg, px) {
+    const pts = [];
+    for (let i = 0; i <= seg; i++) {
+      const t = (i / seg) * Math.PI * 2;
+      pts.push(new THREE.Vector3(sx * Math.cos(t), sy * Math.sin(t), 0));
+    }
+    const curve = new THREE.CatmullRomCurve3(pts, true);
+    const geom = new THREE.TubeGeometry(curve, seg, tr, rSeg, true);
+    const mesh = new THREE.Mesh(geom, frameMat);
+    mesh.position.x = px;
+    return mesh;
+  }
+
+  group.add(createEllipseFrame(1.5, 1.0, 0.04, 64, 8, -1.5));
+  group.add(createEllipseFrame(1.5, 1.0, 0.04, 64, 8, 1.5));
+
+  // Bridge
+  const bPts = [
+    new THREE.Vector3(-0.15, 0.15, 0),
+    new THREE.Vector3(0, 0.3, 0.05),
+    new THREE.Vector3(0.15, 0.15, 0)
+  ];
+  const bCurve = new THREE.CatmullRomCurve3(bPts);
+  const bGeom = new THREE.TubeGeometry(bCurve, 16, 0.025, 6, false);
+  group.add(new THREE.Mesh(bGeom, frameMat));
+
+  // Arms
+  const aPts1 = [
+    new THREE.Vector3(-1.5, 0, 0),
+    new THREE.Vector3(-2.2, 0.02, -0.3),
+    new THREE.Vector3(-2.8, 0, -0.8),
+    new THREE.Vector3(-3.2, -0.02, -1.2)
+  ];
+  const aCurve1 = new THREE.CatmullRomCurve3(aPts1);
+  const aGeom1 = new THREE.TubeGeometry(aCurve1, 20, 0.025, 6, false);
+  group.add(new THREE.Mesh(aGeom1, armMat));
+
+  const aPts2 = [
+    new THREE.Vector3(1.5, 0, 0),
+    new THREE.Vector3(2.2, 0.02, -0.3),
+    new THREE.Vector3(2.8, 0, -0.8),
+    new THREE.Vector3(3.2, -0.02, -1.2)
+  ];
+  const aCurve2 = new THREE.CatmullRomCurve3(aPts2);
+  const aGeom2 = new THREE.TubeGeometry(aCurve2, 20, 0.025, 6, false);
+  group.add(new THREE.Mesh(aGeom2, armMat));
+
+  // Lenses
+  const lensShape = new THREE.Shape();
+  const la = 1.4, lb = 0.93;
+  for (let i = 0; i <= 64; i++) {
+    const t = (i / 64) * Math.PI * 2;
+    const x = la * Math.cos(t);
+    const y = lb * Math.sin(t);
+    if (i === 0) lensShape.moveTo(x, y);
+    else lensShape.lineTo(x, y);
+  }
+  const lensGeom = new THREE.ShapeGeometry(lensShape);
+  const l1 = new THREE.Mesh(lensGeom, lensMat);
+  l1.position.set(-1.5, 0, 0);
+  group.add(l1);
+  const l2 = new THREE.Mesh(lensGeom.clone(), lensMat);
+  l2.position.set(1.5, 0, 0);
+  group.add(l2);
+
+  // Sensor
+  const sGeom = new THREE.SphereGeometry(0.03, 8, 8);
+  const sMesh = new THREE.Mesh(sGeom, sensorMat);
+  sMesh.position.set(2.3, 0.02, -0.5);
+  sMesh.userData.isSensor = true;
+  group.add(sMesh);
+
+  if (w < 400 || isCustom) group.scale.setScalar(0.7);
+
+  group.userData.sensorMat = sensorMat;
+  group.userData.sensor = sMesh;
+  group.userData.lensMat = lensMat;
+  group.userData.frameMat = frameMat;
 }
 
 // Initialize hero glasses
