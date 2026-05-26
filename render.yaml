@@ -11,3 +11,5 @@ services:
         sync: false
       - key: SENDER_NAME
         value: FocusFrame
+      - key: CRON_KEY
+        sync: false

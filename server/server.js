@@ -2,6 +2,7 @@ require('dotenv').config();
 var express = require('express');
 var path = require('path');
 var db = require('./db');
+var mailer = require('./mailer');
 
 var app = express();
 var PORT = process.env.PORT || 3000;
@@ -21,13 +22,13 @@ app.post('/api/subscribe', function(req, res) {
   res.json(result);
 });
 
-// GET /api/subscribers — list all emails (for send-daily.js remote use)
-app.get('/api/subscribers', function(req, res) {
-  var key = req.query.key;
-  if (key !== process.env.API_KEY) {
+// GET /api/send-daily — triggered by cron-job.org to send daily article
+app.get('/api/send-daily', async function(req, res) {
+  if (req.query.key !== process.env.CRON_KEY) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  res.json(db.getAllEmails());
+  var result = await mailer.sendDailyArticle();
+  res.json(result);
 });
 
 app.listen(PORT, function() {
