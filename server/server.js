@@ -32,7 +32,7 @@ app.get('/api/send-daily', async function(req, res) {
 });
 
 // POST /api/chat — Dasher AI assistant powered by Claude
-var Anthropic = require('@anthropic-ai/sdk');
+var OpenAI = require('openai');
 
 var SITE_INFO = [
   'FocusFrame is smart eyewear with adaptive blue-light lenses, silent touch controls, and ambient light sensing.',
@@ -47,8 +47,8 @@ var SITE_INFO = [
 ].join('\n');
 
 app.post('/api/chat', async function(req, res) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return res.status(503).json({ reply: 'Dasher is not configured yet. Please set the ANTHROPIC_API_KEY.' });
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(503).json({ reply: 'Dasher is not configured yet. Please set the OPENAI_API_KEY.' });
   }
 
   var messages = req.body.messages;
@@ -56,26 +56,28 @@ app.post('/api/chat', async function(req, res) {
     return res.status(400).json({ reply: 'Please send a message.' });
   }
 
-  var anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  var openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  var modelsToTry = ['claude-opus-4-7', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229'];
+  var systemMsg = 'You are Dasher, a helpful AI assistant for the FocusFrame website. Your role is to help users understand the product, navigate the site, and find what they need.\n\nAlways be friendly, concise, and enthusiastic about FocusFrame.\n\nWhen a user is looking for a specific page, provide a direct link like <a href="/pricing.html">Pricing</a>.\n\nHere is the site information you know:\n' + SITE_INFO + '\n\nIf a user asks about something not related to FocusFrame, politely redirect them back to the website topic.';
+
+  var modelsToTry = ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'];
   var lastError = '';
+  var fullMessages = [{ role: 'system', content: systemMsg }].concat(messages);
 
   for (var mi = 0; mi < modelsToTry.length; mi++) {
     try {
-      var response = await anthropic.messages.create({
+      var response = await openai.chat.completions.create({
         model: modelsToTry[mi],
         max_tokens: 1024,
-        system: 'You are Dasher, a helpful AI assistant for the FocusFrame website. You are powered by Claude. Your role is to help users understand the product, navigate the site, and find what they need.\n\nAlways be friendly, concise, and enthusiastic about FocusFrame.\n\nWhen a user is looking for a specific page, provide a direct link like <a href="/pricing.html">Pricing</a>.\n\nHere is the site information you know:\n' + SITE_INFO + '\n\nIf a user asks about something not related to FocusFrame, politely redirect them back to the website topic.',
-        messages: messages
+        messages: fullMessages
       });
-      return res.json({ reply: response.content[0].text });
+      return res.json({ reply: response.choices[0].message.content });
     } catch (err) {
       lastError = err.message;
     }
   }
 
-  console.error('Claude API error:', lastError);
+  console.error('OpenAI API error:', lastError);
   res.status(500).json({ reply: 'Dasher error: ' + lastError });
 });
 
