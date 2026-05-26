@@ -47,8 +47,8 @@ var SITE_INFO = [
 ].join('\n');
 
 app.post('/api/chat', async function(req, res) {
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(503).json({ reply: 'Dasher is not configured yet. Please set the OPENAI_API_KEY.' });
+  if (!process.env.DEEPSEEK_API_KEY) {
+    return res.status(503).json({ reply: 'Dasher is not configured yet. Please set the DEEPSEEK_API_KEY.' });
   }
 
   var messages = req.body.messages;
@@ -56,29 +56,23 @@ app.post('/api/chat', async function(req, res) {
     return res.status(400).json({ reply: 'Please send a message.' });
   }
 
-  var openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  var deepseek = new OpenAI({ apiKey: process.env.DEEPSEEK_API_KEY, baseURL: 'https://api.deepseek.com' });
 
   var systemMsg = 'You are Dasher, a helpful AI assistant for the FocusFrame website. Your role is to help users understand the product, navigate the site, and find what they need.\n\nAlways be friendly, concise, and enthusiastic about FocusFrame.\n\nWhen a user is looking for a specific page, provide a direct link like <a href="/pricing.html">Pricing</a>.\n\nHere is the site information you know:\n' + SITE_INFO + '\n\nIf a user asks about something not related to FocusFrame, politely redirect them back to the website topic.';
 
-  var modelsToTry = ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'];
-  var lastError = '';
   var fullMessages = [{ role: 'system', content: systemMsg }].concat(messages);
 
-  for (var mi = 0; mi < modelsToTry.length; mi++) {
-    try {
-      var response = await openai.chat.completions.create({
-        model: modelsToTry[mi],
-        max_tokens: 1024,
-        messages: fullMessages
-      });
-      return res.json({ reply: response.choices[0].message.content });
-    } catch (err) {
-      lastError = err.message;
-    }
+  try {
+    var response = await deepseek.chat.completions.create({
+      model: 'deepseek-chat',
+      max_tokens: 1024,
+      messages: fullMessages
+    });
+    return res.json({ reply: response.choices[0].message.content });
+  } catch (err) {
+    console.error('DeepSeek API error:', err.message);
+    res.status(500).json({ reply: 'Sorry, Dasher had trouble connecting. Please try again.' });
   }
-
-  console.error('OpenAI API error:', lastError);
-  res.status(500).json({ reply: 'Dasher error: ' + lastError });
 });
 
 app.listen(PORT, function() {
