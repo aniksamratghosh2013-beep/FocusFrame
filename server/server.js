@@ -43,7 +43,6 @@ var SITE_INFO = [
   '- /about.html: Company mission, abstract team (4 members), core values (innovation, wellness, sustainability, accessibility), 2026 timeline, contact section.',
   '- /blog.html: Weekly articles on Eye Health, Technology, Wellness, Lifestyle, Product, Company. Newsletter signup form.',
   '- /careers.html: Culture values, 6 employee benefits, 5 open positions (senior optomechanical engineer, firmware engineer, UI/UX designer, marketing lead, supply chain manager). Apply via email.',
-  '- /press.html: Press kit download, 4 press releases, 6 press mentions (TechCrunch, Wired, The Verge, Bloomberg, Forbes, Fast Company). Media contact.'
 ].join('\n');
 
 app.post('/api/chat', async function(req, res) {
