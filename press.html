@@ -450,5 +450,6 @@ var hamburger=document.getElementById('hamburger'),navLinks=document.getElementB
 var reveals=document.querySelectorAll('.reveal');var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible')}})},{threshold:0.1});reveals.forEach(function(r){observer.observe(r)});
 document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){var t=document.querySelector(this.getAttribute('href'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}})});
 </script>
+<script src="/js/chat-widget.js"></script>
 </body>
 </html>
