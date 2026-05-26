@@ -115,9 +115,11 @@ ul{list-style:none}
 .hero__btn--ghost{border:1px solid var(--glass-border);color:var(--text)}
 .hero__btn--ghost:hover{background:var(--glass);border-color:var(--muted);transform:translateY(-2px)}
 .hero__product{position:relative;width:100%;max-width:500px;height:420px;margin:32px auto 0;z-index:2}
-.sketchfab-embed-wrapper{width:100%;height:100%;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);background:var(--surface)}
+.sketchfab-embed-wrapper{width:100%;height:100%;border-radius:16px;overflow:hidden;position:relative}
 .sketchfab-embed-wrapper iframe{width:100%;height:100%;border:none}
+.sketchfab-embed-wrapper .color-overlay{position:absolute;inset:0;pointer-events:none;mix-blend-mode:color;transition:background .3s;border-radius:16px}
 .custom-embed{height:380px}
+.custom-embed .color-overlay{pointer-events:none}
 @media(max-width:768px){.hero__product{height:320px}.custom-embed{height:300px}}
 .hero__product-hint{text-align:center;font-size:0.8rem;color:var(--muted);margin-top:-8px;letter-spacing:0.05em;opacity:0.6}
 .hero__scroll{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;animation:scroll-bounce 2s ease-in-out infinite}
@@ -139,8 +141,18 @@ ul{list-style:none}
 .hero__notif-time{font-size:0.65rem;color:var(--muted);margin-left:auto}
 
 /* Lens Toggle UI */
-/* Custom section */
-.custom__group p{font-size:.95rem;line-height:1.7}
+.custom__group label{display:block;font-family:var(--ff-display);font-weight:600;margin-bottom:12px;font-size:.95rem}
+.custom__swatches{display:flex;gap:12px;flex-wrap:wrap}
+.custom__swatch{width:44px;height:44px;border-radius:50%;border:2px solid var(--glass-border);cursor:pointer;transition:var(--transition);position:relative}
+.custom__swatch.active{border-color:var(--primary);transform:scale(1.1)}
+.custom__swatch:hover{transform:scale(1.1)}
+.custom__swatch--black{background:#1a1a2e}
+.custom__swatch--navy{background:#1e3a5f}
+.custom__swatch--silver{background:#c0c0c0}
+.custom__swatch--amber{background:#b8860b}
+.custom__swatch .check{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;opacity:0;transition:var(--transition)}
+.custom__swatch.active .check{opacity:1}
+/* Footer */
 
 /* Problem Section */
 .problem{background:var(--navy)}
@@ -411,8 +423,8 @@ ul{list-style:none}
     </div>
     <div class="hero__product reveal">
       <div class="sketchfab-embed-wrapper">
-        <iframe title="Glasses" frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking execution-while-out-of-viewport execution-while-not-rendered web-share src="https://sketchfab.com/models/bd1104e5ad1e4a1b9e1793a606c5be82/embed?autostart=1&ui_theme=dark&ui_infos=0&ui_watermark=0"></iframe>
-      </div>
+  <iframe title="Glasses" frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking execution-while-out-of-viewport execution-while-not-rendered web-share src="https://sketchfab.com/models/bd1104e5ad1e4a1b9e1793a606c5be82/embed?autostart=1&transparent=1&ui_theme=dark&ui_infos=0&ui_watermark=0&ui_hint=0&ui_stop=0&dnt=1"></iframe>
+</div>
     </div>
     <div class="hero__product-hint">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px"><path d="M12 2a10 10 0 1 0 10 10h-4a6 6 0 1 1-6-6V2z"/></svg>
@@ -746,14 +758,26 @@ ul{list-style:none}
     </div>
     <div class="custom__inner">
       <div class="sketchfab-embed-wrapper custom-embed">
-        <iframe title="Glasses" frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking execution-while-out-of-viewport execution-while-not-rendered web-share src="https://sketchfab.com/models/bd1104e5ad1e4a1b9e1793a606c5be82/embed?autostart=1&ui_theme=dark&ui_infos=0&ui_watermark=0"></iframe>
+        <div class="color-overlay" id="colorOverlay"></div>
+        <iframe title="Glasses" frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking execution-while-out-of-viewport execution-while-not-rendered web-share src="https://sketchfab.com/models/bd1104e5ad1e4a1b9e1793a606c5be82/embed?autostart=1&transparent=1&ui_theme=dark&ui_infos=0&ui_watermark=0&ui_hint=0&ui_stop=0&dnt=1"></iframe>
       </div>
       <div class="custom__pickers">
         <div class="custom__group reveal">
-          <p style="color:var(--muted);font-size:.95rem;line-height:1.7">Premium titanium frame with adaptive smart lenses. <strong style="color:var(--text)">300 QAR</strong> &middot; Free shipping &middot; 30-day trial</p>
-          <a href="pricing.html" class="btn btn--primary" style="display:inline-flex;margin-top:1rem;text-decoration:none">Order Now
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </a>
+          <label>Frame Color</label>
+          <div class="custom__swatches">
+            <button class="custom__swatch custom__swatch--black active" data-color="#1a1a2e" data-overlay="rgba(0,0,0,0.25)" aria-label="Matte Black">
+              <svg class="check" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="custom__swatch custom__swatch--navy" data-color="#1e3a5f" data-overlay="rgba(30,58,95,0.25)" aria-label="Deep Navy">
+              <svg class="check" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="custom__swatch custom__swatch--silver" data-color="#c0c0c0" data-overlay="rgba(192,192,192,0.15)" aria-label="Silver">
+              <svg class="check" viewBox="0 0 24 24" fill="none" stroke="#0a0f1e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="custom__swatch custom__swatch--amber" data-color="#b8860b" data-overlay="rgba(184,134,11,0.25)" aria-label="Amber">
+              <svg class="check" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1004,6 +1028,18 @@ window.addEventListener('load', () => {
     setTimeout(() => ls.classList.add('hidden'), 400);
   }
 });
+
+// Color swatch customization
+const overlay = document.getElementById('colorOverlay');
+if (overlay) {
+  document.querySelectorAll('.custom__swatch').forEach(s => {
+    s.addEventListener('click', () => {
+      document.querySelectorAll('.custom__swatch').forEach(x => x.classList.remove('active'));
+      s.classList.add('active');
+      overlay.style.background = s.dataset.overlay;
+    });
+  });
+}
 
 // Particles
 (function initParticles() {
