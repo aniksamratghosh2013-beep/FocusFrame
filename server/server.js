@@ -31,11 +31,13 @@ app.get('/api/send-daily', async function(req, res) {
   res.json(result);
 });
 
-// POST /api/chat — Dasher AI assistant powered by NLP.js (no API key needed)
+// POST /api/chat — Dasher AI assistant
+// Uses Groq LLM when GROQ_API_KEY is set, gracefully falls back to NLP intent classifier
 var { NlpManager } = require('@nlpjs/basic');
 var manager = new NlpManager({ languages: ['en'] });
 
-// Train intents
+var SITE_INFO = 'FocusFrame is smart eyewear (300 QAR) with adaptive blue-light lenses, silent touch controls, ambient light sensing, 18g titanium frame, 7-day battery. Pages: / (home), /pricing.html (300 QAR + 12/10 QAR tech plan), /about.html (mission + team), /blog.html (weekly articles), /careers.html (5 open roles). Contact: hellofocusframe26@gmail.com.';
+
 manager.addNamedEntityText('hero', 'dashed', ['en'], ['dasher']);
 manager.addDocument('en', 'hello', 'greeting');
 manager.addDocument('en', 'hi', 'greeting');
@@ -164,9 +166,31 @@ app.post('/api/chat', async function(req, res) {
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ reply: 'Please send a message.' });
   }
+
   var lastMsg = messages[messages.length - 1].content || '';
-  var response = await manager.process('en', lastMsg);
-  var reply = response.answer;
+
+  // Try Groq LLM if API key is configured
+  if (process.env.GROQ_API_KEY) {
+    var OpenAI = require('openai');
+    var groq = new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: 'https://api.groq.com/openai/v1' });
+    var systemMsg = 'You are Dasher, a friendly AI assistant for the FocusFrame website. Help users understand the product and navigate the site. Be concise and enthusiastic.\n\nSite info:\n' + SITE_INFO + '\n\nProvide short answers with HTML links to site pages when relevant. If asked about non-FocusFrame topics, politely redirect back.';
+
+    var fullMessages = [{ role: 'system', content: systemMsg }].concat(messages);
+    var modelsToTry = ['llama-3.1-8b-instant', 'gemma2-9b-it', 'llama-3.3-70b-versatile'];
+
+    for (var mi = 0; mi < modelsToTry.length; mi++) {
+      try {
+        var response = await groq.chat.completions.create({ model: modelsToTry[mi], max_tokens: 1024, messages: fullMessages });
+        return res.json({ reply: response.choices[0].message.content });
+      } catch (err) {
+        if (mi === modelsToTry.length - 1) console.error('Groq error:', err.message);
+      }
+    }
+  }
+
+  // Fallback: NLP intent classifier
+  var nlpResponse = await manager.process('en', lastMsg);
+  var reply = nlpResponse.answer;
   if (!reply) {
     reply = 'I\'m not sure I understand. I can help with <a href="/pricing.html">pricing</a>, <a href="/#features">features</a>, <a href="/#faq">FAQs</a>, <a href="/careers.html">careers</a>, and more. What would you like to know?';
   }
@@ -175,7 +199,7 @@ app.post('/api/chat', async function(req, res) {
 
 (async function() {
   await manager.train();
-  console.log('Dasher trained');
+  console.log('Dasher ready');
   app.listen(PORT, function() {
     console.log('FocusFrame running at http://localhost:' + PORT);
   });
