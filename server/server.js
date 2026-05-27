@@ -31,54 +31,52 @@ app.get('/api/send-daily', async function(req, res) {
   res.json(result);
 });
 
-// POST /api/chat — Dasher AI assistant powered by Claude
-var OpenAI = require('openai');
+// POST /api/chat — Dasher AI assistant (keyword-based, no API key needed)
+var KB = [
+  { keywords: ['hello','hi','hey','greetings'], resp: 'Hi there! I\'m Dasher, your FocusFrame guide. Ask me about the glasses, pricing, features, or anything else!' },
+  { keywords: ['price','cost','pricing','buy','order','qar'], resp: 'FocusFrame is <strong>300 QAR</strong> one-time for the glasses. Subscribe to the Tech Plan for <strong>12 QAR/month</strong> (monthly) or <strong>10 QAR/month</strong> billed annually (120 QAR/yr — save 24 QAR). <a href="/pricing.html">See full pricing</a>' },
+  { keywords: ['lens','blue-light','blue light','adaptive','tint','eye strain'], resp: 'FocusFrame uses electrochromic technology that adjusts lens tint in under 2 seconds based on ambient light. It blocks <strong>99% of blue light</strong> while maintaining crystal-clear vision. The tint level adapts automatically to your environment.' },
+  { keywords: ['touch','control','gesture','tap','swipe'], resp: 'The arms have a capacitive touch sensor that detects taps (single/double/triple), swipes, and holds — no buttons needed. Adjust settings silently without looking at the controls.' },
+  { keywords: ['battery','charge','charging','wireless','usb'], resp: 'Up to <strong>7 days</strong> of mixed use per charge. The wireless charging case holds 3 more full charges (nearly a month total). A 15-minute quick charge gives you 24 hours of use.' },
+  { keywords: ['weight','gram','light','comfortable','comfort'], resp: 'At just <strong>18 grams</strong> in a titanium alloy frame, FocusFrame is lighter than standard glasses (typically 25-35g). Designed for all-day wear.' },
+  { keywords: ['return','refund','trial','warranty'], resp: 'Every purchase includes a <strong>30-day risk-free trial</strong> — full refund if not satisfied. Also comes with a <strong>2-year warranty</strong> covering manufacturing defects, with free shipping on replacements.' },
+  { keywords: ['shipping','delivery','ship','free shipping'], resp: 'Free shipping on all orders. Replacements under warranty also ship free. Delivery typically takes 5-10 business days.' },
+  { keywords: ['subscription','tech plan','monthly','annual','month','year'], resp: 'The Tech Plan unlocks premium features: advanced lens modes, firmware updates, usage analytics, and priority support. <strong>12 QAR/month</strong> or <strong>10 QAR/month</strong> billed annually (120 QAR/yr — save 24 QAR). No long-term commitment.' },
+  { keywords: ['career','job','apply','position','hiring','work'], resp: 'We\'re hiring! Open roles: Senior Optomechanical Engineer, Firmware Engineer, UI/UX Designer, Marketing Lead, and Supply Chain Manager. <a href="/careers.html">View careers</a> and apply via email.' },
+  { keywords: ['about','company','mission','team'], resp: 'FocusFrame\'s mission is to help the digital generation protect their eyes without sacrificing style or functionality. We value innovation, wellness, sustainability, and accessibility. <a href="/about.html">Learn more</a>' },
+  { keywords: ['blog','article','newsletter','read'], resp: 'Our blog covers eye health, technology, wellness, and lifestyle topics — updated weekly. <a href="/blog.html">Read the blog</a> and subscribe to the newsletter for updates.' },
+  { keywords: ['compare','vs','versus','difference','better','standard','normal'], resp: 'FocusFrame vs standard glasses: 99% blue-light protection (vs 45%), adaptive lenses (none), touch controls (none), 18g titanium frame (vs 25-35g plastic), 7-day battery, wireless charging. <a href="/#compare">See full comparison</a>' },
+  { keywords: ['prescription','rx','prescription-ready','optician','lens replacement'], resp: 'Yes! FocusFrame is prescription-ready. Take them to any optical retailer to swap in prescription lenses — the smart tech stays in the frame and arms, so functionality is unaffected.' },
+  { keywords: ['compatible','phone','app','bluetooth','ios','android'], resp: 'Compatible with iOS 16+ and Android 13+ via Bluetooth 5.3. The companion app offers advanced customization, firmware updates, and analytics. Core features work without a phone.' },
+  { keywords: ['water','waterproof','water-resistant','splash','rain','ipx'], resp: 'Rated <strong>IPX4</strong> — splash-resistant against sweat, light rain, and spills. Not for submersion or swimming. The charging case is not water-resistant.' },
+  { keywords: ['driving','drive','car','road'], resp: 'Yes, safe for driving. The adaptive tint stays within legal transmittance limits, and blue-light filtration doesn\'t affect color perception needed for road signs.' },
+  { keywords: ['help','support','contact','email','reach'], resp: 'You can reach us at <a href="mailto:hellofocusframe26@gmail.com">hellofocusframe26@gmail.com</a>. For quick questions, just ask me right here!' },
+];
 
-var SITE_INFO = [
-  'FocusFrame is smart eyewear with adaptive blue-light lenses, silent touch controls, and ambient light sensing.',
-  '',
-  'Site pages:',
-  '- / (home): Hero with 3D glasses, Problem section (10h screen time), Features (adaptive lenses, blue-light 99%, touch, 18g, 7-day battery), Lifestyles (workspace/gaming/outdoor), How It Works, FAQ, Comparison table, Pricing CTA (300 QAR).',
-  '- /pricing.html: 300 QAR one-time for glasses. Two tech subscription options: 12 QAR/month (monthly) or 10 QAR/month (annual, 120 QAR/yr, save 24 QAR). Free shipping, 30-day trial, 2-year warranty. Comparison vs standard glasses. Pricing FAQ.',
-  '- /about.html: Company mission, abstract team (4 members), core values (innovation, wellness, sustainability, accessibility), 2026 timeline, contact section.',
-  '- /blog.html: Weekly articles on Eye Health, Technology, Wellness, Lifestyle, Product, Company. Newsletter signup form.',
-  '- /careers.html: Culture values, 6 employee benefits, 5 open positions (senior optomechanical engineer, firmware engineer, UI/UX designer, marketing lead, supply chain manager). Apply via email.',
-].join('\n');
-
-app.post('/api/chat', async function(req, res) {
-  if (!process.env.GROQ_API_KEY) {
-    return res.status(503).json({ reply: 'Dasher is not configured yet. Please set the GROQ_API_KEY.' });
+function findResponse(text) {
+  text = text.toLowerCase();
+  var best = null, bestCount = 0;
+  for (var i = 0; i < KB.length; i++) {
+    var count = 0;
+    for (var k = 0; k < KB[i].keywords.length; k++) {
+      if (text.indexOf(KB[i].keywords[k]) !== -1) count++;
+    }
+    if (count > bestCount) { bestCount = count; best = KB[i].resp; }
   }
+  return best;
+}
 
+app.post('/api/chat', function(req, res) {
   var messages = req.body.messages;
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ reply: 'Please send a message.' });
   }
-
-  var groq = new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: 'https://api.groq.com/openai/v1' });
-
-  var systemMsg = 'You are Dasher, a helpful AI assistant for the FocusFrame website. Your role is to help users understand the product, navigate the site, and find what they need.\n\nAlways be friendly, concise, and enthusiastic about FocusFrame.\n\nWhen a user is looking for a specific page, provide a direct link like <a href="/pricing.html">Pricing</a>.\n\nHere is the site information you know:\n' + SITE_INFO + '\n\nIf a user asks about something not related to FocusFrame, politely redirect them back to the website topic.';
-
-  var fullMessages = [{ role: 'system', content: systemMsg }].concat(messages);
-
-  var modelsToTry = ['llama-3.1-8b-instant', 'gemma2-9b-it', 'llama-3.3-70b-versatile'];
-  var lastError = '';
-
-  for (var mi = 0; mi < modelsToTry.length; mi++) {
-    try {
-      var response = await groq.chat.completions.create({
-        model: modelsToTry[mi],
-        max_tokens: 1024,
-        messages: fullMessages
-      });
-      return res.json({ reply: response.choices[0].message.content });
-    } catch (err) {
-      lastError = err.message;
-    }
+  var lastMsg = messages[messages.length - 1].content || '';
+  var reply = findResponse(lastMsg);
+  if (!reply) {
+    reply = 'I\'m not sure I understand. I can help with <a href="/pricing.html">pricing</a>, <a href="/#features">features</a>, <a href="/#faq">FAQs</a>, <a href="/careers.html">careers</a>, and more. What would you like to know?';
   }
-
-  console.error('Groq error:', lastError);
-  res.json({ reply: 'Dasher error: ' + lastError });
+  res.json({ reply: reply });
 });
 
 app.listen(PORT, function() {
