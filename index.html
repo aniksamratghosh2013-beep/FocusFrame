@@ -300,7 +300,15 @@ ul{list-style:none}
 
 /* Comparison */
 .compare__header{text-align:center;margin-bottom:48px}
-.compare__footnote{text-align:center;margin-top:32px;font-size:.85rem;color:var(--muted)}
+.compare__table-wrapper{display:flex;justify-content:center}
+.compare__table{width:auto;min-width:480px;max-width:100%;border-collapse:collapse;font-size:.85rem}
+.compare__table th,.compare__table td{padding:12px 24px;text-align:left;border-bottom:1px solid var(--glass-border)}
+.compare__table th{font-family:var(--ff-display);font-weight:600;color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:0.06em}
+.compare__table td:first-child{font-weight:500;color:var(--text)}
+.compare__table td:last-child{color:var(--primary);font-weight:500}
+.compare__check{width:18px;height:18px;color:#22c55e}
+.compare__cross{width:18px;height:18px;color:#ef4444}
+.compare__footnote{text-align:center;margin-top:32px;font-size:.80rem;color:var(--muted)}
 
 /* Final CTA */
 .cta-final{position:relative;background:linear-gradient(180deg,var(--dark),var(--navy));text-align:center;overflow:hidden;padding:100px 24px}
@@ -351,7 +359,9 @@ ul{list-style:none}
   .showcase__grid{grid-template-columns:1fr 1fr}
   .psych__grid{grid-template-columns:1fr}
   .faq__list{padding:0}
-  .compare__table-wrapper{padding:0}
+  .compare__table-wrapper{padding:0;overflow-x:auto}
+  .compare__table{min-width:0;width:100%;font-size:.8rem}
+  .compare__table th,.compare__table td{padding:10px 14px}
   .custom__inner{grid-template-columns:1fr}
 }
 @media(max-width:480px){
