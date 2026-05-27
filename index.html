@@ -294,6 +294,31 @@ ul{list-style:none}
 .faq__answer{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .4s ease;padding:0 0}
 .faq__answer.open{max-height:300px;padding:0 0 20px 0}
 .faq__answer p{font-size:.9rem;color:var(--muted);line-height:1.7;margin:0}
+.faq__warranty{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:40px}
+.faq__badge{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted);padding:6px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:20px}
+.faq__badge svg{width:14px;height:14px;color:var(--primary);flex-shrink:0}
+
+/* Comparison */
+.compare__header{text-align:center;margin-bottom:48px}
+.compare__footnote{text-align:center;margin-top:32px;font-size:.85rem;color:var(--muted)}
+
+/* Final CTA */
+.cta-final{position:relative;background:linear-gradient(180deg,var(--dark),var(--navy));text-align:center;overflow:hidden;padding:100px 24px}
+.cta-final__inner{max-width:680px;margin:0 auto;position:relative;z-index:1}
+.cta-final__title{font-family:var(--ff-display);font-size:clamp(2rem,5vw,3.2rem);font-weight:700;line-height:1.15;letter-spacing:-0.02em;margin-bottom:20px}
+.cta-final__title span{background:linear-gradient(135deg,var(--amber),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cta-final__desc{font-size:1rem;color:var(--muted);line-height:1.7;margin-bottom:36px}
+.cta-final__actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:32px}
+.cta-final__btn{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;border-radius:var(--radius);font-size:.95rem;font-weight:600;transition:var(--transition);text-decoration:none}
+.cta-final__btn--primary{background:var(--primary);color:#fff;box-shadow:0 4px 20px var(--primary-glow)}
+.cta-final__btn--primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--primary-glow)}
+.cta-final__btn--ghost{border:1px solid var(--glass-border);color:var(--text)}
+.cta-final__btn--ghost:hover{border-color:var(--primary);background:var(--glass)}
+.cta-final__price{display:flex;align-items:center;justify-content:center;gap:12px;font-size:.9rem;color:var(--muted)}
+.cta-final__price strong{font-size:1.4rem;color:var(--text);font-family:var(--ff-display)}
+.cta-final__glow-1,.cta-final__glow-2{position:absolute;border-radius:50%;pointer-events:none}
+.cta-final__glow-1{width:500px;height:500px;background:radial-gradient(circle,rgba(99,102,241,0.08),transparent 70%);top:-100px;left:-100px}
+.cta-final__glow-2{width:400px;height:400px;background:radial-gradient(circle,rgba(245,158,11,0.06),transparent 70%);bottom:-80px;right:-80px}
 
 /* Footer */
 .footer{background:var(--dark);border-top:1px solid var(--glass-border);padding:64px 24px 32px}
@@ -861,6 +886,24 @@ ul{list-style:none}
           <p>All FocusFrame purchases come with a 30-day risk-free trial. If you're not satisfied, return them for a full refund — no questions asked. We also include a 2-year warranty covering manufacturing defects, with free shipping on replacements.</p>
         </div>
       </div>
+      <div class="faq__item reveal">
+        <button class="faq__question">
+          Is FocusFrame waterproof or water-resistant?
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq__answer">
+          <p>FocusFrame is rated IPX4, meaning it is splash-resistant and can withstand sweat, light rain, and accidental splashes. It should not be submerged in water or worn while swimming. The included charging case is not water-resistant.</p>
+        </div>
+      </div>
+      <div class="faq__item reveal">
+        <button class="faq__question">
+          Can I use FocusFrame while driving?
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq__answer">
+          <p>Yes. FocusFrame's adaptive tint is designed to stay within legal transmittance limits for driving in most regions. The touch controls are intuitive enough to operate without distraction, and the blue-light filtration does not affect color perception needed for road signs.</p>
+        </div>
+      </div>
     </div>
     <div class="faq__warranty reveal">
       <div class="faq__badge">
@@ -980,7 +1023,7 @@ ul{list-style:none}
   </div>
   <div class="cta-final__inner reveal">
     <h2 class="cta-final__title">See the world <span>beyond the screen.</span></h2>
-    <p class="cta-final__desc">Join thousands who have transformed their relationship with technology. Your eyes will thank you.</p>
+    <p class="cta-final__desc">Join thousands who have already transformed their relationship with technology. FocusFrame lets you stay connected without the eye strain, sleep disruption, and digital fatigue that comes with constant screen time. Whether you are working, reading, or relaxing, our smart adaptive lenses automatically adjust to your environment — filtering harmful blue light indoors and transitioning to sunglasses outdoors. Your eyes work hard every day; it is time they had a pair of glasses as intelligent as they are.</p>
     <div class="cta-final__actions">
       <a href="pricing.html" class="cta-final__btn cta-final__btn--primary">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
