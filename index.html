@@ -283,6 +283,18 @@ ul{list-style:none}
 .custom__header{text-align:center;margin-bottom:64px}
 .custom__inner{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
 @media(max-width:768px){.custom__inner{grid-template-columns:1fr}}
+
+/* FAQ Accordion */
+.faq__list{max-width:760px;margin:0 auto}
+.faq__item{border-bottom:1px solid var(--glass-border);padding:0}
+.faq__question{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0;background:none;border:none;color:var(--text);font-family:var(--ff-display);font-size:1rem;font-weight:500;text-align:left;cursor:pointer;transition:color .2s}
+.faq__question:hover{color:var(--primary)}
+.faq__question svg{width:20px;height:20px;flex-shrink:0;transition:transform .3s;color:var(--muted)}
+.faq__question.active svg{transform:rotate(180deg);color:var(--primary)}
+.faq__answer{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .4s ease;padding:0 0}
+.faq__answer.open{max-height:300px;padding:0 0 20px 0}
+.faq__answer p{font-size:.9rem;color:var(--muted);line-height:1.7;margin:0}
+
 /* Footer */
 .footer{background:var(--dark);border-top:1px solid var(--glass-border);padding:64px 24px 32px}
 .footer__inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px}
