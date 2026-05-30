@@ -25,10 +25,15 @@ app.post('/api/subscribe', function(req, res) {
 // GET /api/send-daily — triggered by cron-job.org to send daily article
 app.get('/api/send-daily', async function(req, res) {
   if (req.query.key !== process.env.CRON_KEY) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(200).send('ERR_AUTH');
   }
-  var result = await mailer.sendDailyArticle();
-  res.json(result);
+  try {
+    var result = await mailer.sendDailyArticle();
+    res.status(200).send('OK:' + result.sent + '/' + result.failed);
+  } catch (err) {
+    console.error('send-daily error:', err.message);
+    res.status(200).send('ERR:' + err.message.slice(0, 80));
+  }
 });
 
 // POST /api/chat — Dasher AI assistant

@@ -51,48 +51,52 @@ function buildEmailHtml(article) {
 }
 
 async function sendDailyArticle() {
-  var article = pickArticle();
-  if (!article) return { sent: 0, failed: 0, error: 'No article available' };
+  try {
+    var article = pickArticle();
+    if (!article) return 'no_article';
 
-  var required = ['GMAIL_USER', 'GMAIL_APP_PASSWORD'];
-  for (var key of required) {
-    if (!process.env[key]) return { sent: 0, failed: 0, error: 'Missing ' + key };
-  }
-
-  var emails = db.getAllEmails();
-  if (emails.length === 0) return { sent: 0, failed: 0, message: 'No subscribers' };
-
-  var transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
-    },
-  });
-
-  var emailHtml = buildEmailHtml(article);
-  var senderName = process.env.SENDER_NAME || 'FocusFrame';
-  var sent = 0;
-  var failed = 0;
-
-  for (var email of emails) {
-    try {
-      await transporter.sendMail({
-        from: '"' + senderName + '" <' + process.env.GMAIL_USER + '>',
-        to: email,
-        subject: article.c + ': ' + article.t,
-        html: emailHtml,
-      });
-      sent++;
-    } catch (err) {
-      console.error('Failed to send to ' + email + ':', err.message);
-      failed++;
+    var required = ['GMAIL_USER', 'GMAIL_APP_PASSWORD'];
+    for (var i = 0; i < required.length; i++) {
+      if (!process.env[required[i]]) return 'missing_' + required[i];
     }
-  }
 
-  return { sent: sent, failed: failed, article: article.t };
+    var emails = db.getAllEmails();
+    if (emails.length === 0) return 'no_subs';
+
+    var transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+
+    var emailHtml = buildEmailHtml(article);
+    var senderName = process.env.SENDER_NAME || 'FocusFrame';
+    var sent = 0;
+    var failed = 0;
+
+    for (var j = 0; j < emails.length; j++) {
+      try {
+        await transporter.sendMail({
+          from: '"' + senderName + '" <' + process.env.GMAIL_USER + '>',
+          to: emails[j],
+          subject: article.c + ': ' + article.t,
+          html: emailHtml,
+        });
+        sent++;
+      } catch (err) {
+        console.error('Failed to send to ' + emails[j] + ':', err.message);
+        failed++;
+      }
+    }
+
+    return 'ok:' + sent + '/' + failed;
+  } catch (err) {
+    return 'err:' + err.message.slice(0, 100);
+  }
 }
 
 module.exports = { sendDailyArticle };
