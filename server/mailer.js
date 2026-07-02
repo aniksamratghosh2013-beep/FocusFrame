@@ -1,46 +1,22 @@
-var nodemailer = require('nodemailer');
-var dns = require('dns');
 var db = require('./db');
 
-var transporter = null;
-
-function createTransporter(port, secure, rejectUnauthorized) {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: port,
-    secure: secure,
-    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
-    tls: { rejectUnauthorized: rejectUnauthorized },
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 20000,
-    lookup: function(hostname, opts, cb) {
-      dns.lookup(hostname, { family: 4, hints: dns.ADDRCONFIG }, cb);
-    },
-  });
+var sgMail = null;
+try {
+  sgMail = require('@sendgrid/mail');
+} catch (e) {
+  // @sendgrid/mail not installed yet
 }
 
-function getTransporter() {
-  if (transporter) return transporter;
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    throw new Error('Missing GMAIL_USER or GMAIL_APP_PASSWORD');
+function getSgMail() {
+  if (!sgMail) {
+    sgMail = require('@sendgrid/mail');
   }
-  transporter = createTransporter(465, true, true);
-  return transporter;
+  if (!sgMail.__initialized && process.env.SENDGRID_API_KEY) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    sgMail.__initialized = true;
+  }
+  return sgMail;
 }
-
-getTransporter().verify().then(function() {
-  console.log('Mail transporter verified');
-}).catch(function(err) {
-  console.error('Mail transporter FAILED (' + err.message + '), trying 587...');
-  transporter = null;
-  transporter = createTransporter(587, false, false);
-  transporter.verify().then(function() {
-    console.log('Mail transporter verified via 587');
-  }).catch(function(err2) {
-    console.error('Mail transporter also FAILED on 587:', err2.message);
-  });
-});
 
 // Article sets — must match blog.html weekly rotation
 var articleSets = [{f:{d:"May 26, 2026",c:"Eye Health",t:"The Hidden Cost of Blue Light: What the Research Actually Says",b:"A deep dive into the latest peer-reviewed studies on blue light exposure, circadian rhythms, and the surprising impact on long-term vision health.",u:"https://www.brightfocus.org/news/new-research-links-blue-light-to-macular-degeneration-risk-antioxidants-may-offer-hope"},g:[{d:"May 22, 2026",c:"Wellness",t:"5 Signs Your Screen Time Is Affecting Your Sleep",b:"Recognize the early warning signs of digital eye strain and circadian disruption before they become chronic.",u:"https://health.osu.edu/health/mental-health/how-screen-time-affects-your-health"},{d:"May 18, 2026",c:"Product",t:"Why We Built Silent Touch Instead of Voice Control",b:"Voice assistants are intrusive. Here\u2019s why we chose haptic touch for controlling your FocusFrame.",u:"#"},{d:"May 14, 2026",c:"Product",t:"FocusFrame vs. Traditional Blue-Light Glasses",b:"A full comparison of adaptive lens technology against conventional blue-light filtering solutions.",u:"#"},{d:"May 10, 2026",c:"Technology",t:"How Adaptive Lenses Actually Work",b:"The technology behind lenses that automatically adjust to ambient light and screen conditions.",u:"https://www.allaboutvision.com/eyewear/eyeglasses/lenses/photochromic/"},{d:"May 6, 2026",c:"Lifestyle",t:"Digital Minimalism: 3 Tools That Changed How We Work",b:"Our team\u2019s curated toolkit for reducing digital noise and reclaiming deep focus in a distracted world.",u:"https://www.configurationconnection.com/reclaim-your-time-focus-with-digital-minimalism"},{d:"May 2, 2026",c:"Company",t:"Qatar\u2019s Growing Role in Health-Tech Innovation",b:"How FocusFrame is contributing to Qatar\u2019s vision of becoming a global hub for health technology.",u:"#"}]},{f:{d:"May 25, 2026",c:"Eye Health",t:"Effective Tips for Reducing Eye Strain",b:"A Harvard Health guide to recognizing and preventing digital eye strain with simple daily habits and workspace adjustments.",u:"https://www.health.harvard.edu/staying-healthy/computer-related-eye-strain"},g:[{d:"May 21, 2026",c:"Technology",t:"The Future of Smart Eyewear",b:"Where wearable display technology is headed and how FocusFrame fits into the next decade of human-computer interaction.",u:"#"}/*,{d:"May 17, 2026",c:"Wellness",t:"Screen Time and Mental Health: What the Data Says",b:"An analysis of recent studies linking prolonged screen exposure to anxiety, attention span, and overall well-being.",u:"#"},{d:"May 13, 2026",c:"Product",t:"Our Design Philosophy: Why We Chose Titanium",b:"The material science behind our 18g frame and how titanium alloy improves durability without adding weight.",u:"#"}*/]}];
@@ -112,36 +88,34 @@ function buildWelcomeHtml() {
   ].join('\n');
 }
 
-async function sendWelcomeEmail(email) {
-  var t = getTransporter();
-  var senderName = process.env.SENDER_NAME || 'FocusFrame';
-  await t.sendMail({
-    from: '"' + senderName + '" <' + process.env.GMAIL_USER + '>',
-    to: email,
-    subject: 'Welcome to FocusFrame — You\'re in.',
-    html: buildWelcomeHtml(),
+async function sendEmail(to, subject, html) {
+  var sg = getSgMail();
+  var fromEmail = process.env.SENDGRID_FROM || 'hellofocusframe26@gmail.com';
+  var fromName = process.env.SENDER_NAME || 'FocusFrame';
+  await sg.send({
+    to: to,
+    from: { email: fromEmail, name: fromName },
+    subject: subject,
+    html: html,
   });
+}
+
+async function sendWelcomeEmail(email) {
+  await sendEmail(email, 'Welcome to FocusFrame — You\'re in.', buildWelcomeHtml());
 }
 
 async function sendDailyArticle() {
   try {
     var article = pickArticle();
     if (!article) return 'no_article';
-    var t = getTransporter();
     var emails = db.getAllEmails();
     if (emails.length === 0) return 'no_subs';
     var emailHtml = buildEmailHtml(article);
-    var senderName = process.env.SENDER_NAME || 'FocusFrame';
     var sent = 0;
     var failed = 0;
     for (var j = 0; j < emails.length; j++) {
       try {
-        await t.sendMail({
-          from: '"' + senderName + '" <' + process.env.GMAIL_USER + '>',
-          to: emails[j],
-          subject: article.c + ': ' + article.t,
-          html: emailHtml,
-        });
+        await sendEmail(emails[j], article.c + ': ' + article.t, emailHtml);
         sent++;
       } catch (err) {
         console.error('Failed to send to ' + emails[j] + ':', err.message);
