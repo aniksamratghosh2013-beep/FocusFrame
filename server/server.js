@@ -22,11 +22,8 @@ app.post('/api/subscribe', function(req, res) {
   res.json(result);
 });
 
-// GET /api/send-daily — triggered by cron-job.org to send daily article
+// GET /api/send-daily — manually trigger daily email send
 app.get('/api/send-daily', async function(req, res) {
-  if (req.query.key !== process.env.CRON_KEY) {
-    return res.status(200).send('ERR_AUTH');
-  }
   try {
     var result = await mailer.sendDailyArticle();
     res.status(200).send(result);
@@ -242,9 +239,18 @@ app.listen(PORT, function() {
   console.log('FocusFrame running at http://localhost:' + PORT);
 });
 
+var cron = require('node-cron');
+
 // Train NLP model in background after server starts
 (async function() {
   await nlp.train();
   nlpReady = true;
   console.log('Dasher ready');
 })();
+
+// Daily email scheduler: runs at 5:00 UTC (8:00 AM Riyadh)
+cron.schedule('0 5 * * *', async function() {
+  console.log('Running scheduled daily email...');
+  var result = await mailer.sendDailyArticle();
+  console.log('Daily email result:', result);
+});
