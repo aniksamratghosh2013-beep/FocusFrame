@@ -2,6 +2,7 @@ var nodemailer = require('nodemailer');
 var db = require('./db');
 
 var transporter = null;
+var transporterReady = false;
 
 function getTransporter() {
   if (transporter) return transporter;
@@ -10,10 +11,13 @@ function getTransporter() {
   }
   transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
     tls: { rejectUnauthorized: true },
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 20000,
   });
   return transporter;
 }
@@ -21,7 +25,23 @@ function getTransporter() {
 getTransporter().verify().then(function() {
   console.log('Mail transporter verified');
 }).catch(function(err) {
-  console.error('Mail transporter FAILED:', err.message);
+  console.error('Mail transporter FAILED (' + err.message + '), trying port 587...');
+  transporter = null;
+  transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 20000,
+  });
+  transporter.verify().then(function() {
+    console.log('Mail transporter verified via 587');
+  }).catch(function(err2) {
+    console.error('Mail transporter also FAILED on 587:', err2.message);
+  });
 });
 
 // Article sets — must match blog.html weekly rotation
