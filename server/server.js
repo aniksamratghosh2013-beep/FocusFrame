@@ -20,8 +20,10 @@ app.post('/api/subscribe', async function(req, res) {
   }
   var result = db.addSubscriber(email);
   if (result.success) {
-    mailer.sendWelcomeEmail(email).catch(function(err) {
-      console.error('Welcome email failed:', err.message);
+    mailer.sendWelcomeEmail(email).then(function() {
+      console.log('Welcome email sent to ' + email);
+    }).catch(function(err) {
+      console.error('Welcome email failed for ' + email + ':', err.message);
     });
   }
   res.json(result);
@@ -242,6 +244,8 @@ app.post('/api/chat', async function(req, res) {
 
 app.listen(PORT, function() {
   console.log('FocusFrame running at http://localhost:' + PORT);
+  console.log('GMAIL_USER set:', !!process.env.GMAIL_USER);
+  console.log('GMAIL_APP_PASSWORD set:', !!process.env.GMAIL_APP_PASSWORD);
 });
 
 var cron = require('node-cron');

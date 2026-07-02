@@ -72,9 +72,8 @@ function buildWelcomeHtml() {
 }
 
 async function sendWelcomeEmail(email) {
-  var required = ['GMAIL_USER', 'GMAIL_APP_PASSWORD'];
-  for (var i = 0; i < required.length; i++) {
-    if (!process.env[required[i]]) return 'missing_' + required[i];
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error('Missing GMAIL_USER or GMAIL_APP_PASSWORD');
   }
 
   var transporter = nodemailer.createTransport({
