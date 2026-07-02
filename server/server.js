@@ -44,7 +44,7 @@ var nlp = new Nlp({ languages: ['en'], container: container });
 container.register('nlp', nlp);
 container.register('Language', LangEn);
 
-var SITE_INFO = 'FocusFrame is smart eyewear (300 QAR) with adaptive blue-light lenses, silent touch controls, ambient light sensing, 18g titanium frame, 7-day battery. Pages: / (home), /pricing.html (300 QAR + 12/10 QAR tech plan), /about.html (mission + team), /blog.html (weekly articles), /careers.html (5 open roles). Contact: hellofocusframe26@gmail.com.';
+var SITE_INFO = 'FocusFrame is smart eyewear (300 QAR) with adaptive blue-light lenses, silent touch controls, ambient light sensing, 18g titanium frame, 7-day battery, and a built-in transparent AR display that projects notifications, navigation, calls, and apps into your field of view. Pages: / (home), /pricing.html (300 QAR + 12/10 QAR tech plan), /about.html (mission + team), /blog.html (weekly articles), /careers.html (5 open roles). Contact: hellofocusframe26@gmail.com.';
 
 nlp.addDocument('en', 'hello', 'greeting');
 nlp.addDocument('en', 'hi', 'greeting');
@@ -148,6 +148,21 @@ nlp.addDocument('en', 'contact', 'help');
 nlp.addDocument('en', 'support', 'help');
 nlp.addDocument('en', 'email', 'help');
 nlp.addDocument('en', 'how can i reach you', 'help');
+nlp.addDocument('en', 'ar display', 'ardisplay');
+nlp.addDocument('en', 'augmented reality', 'ardisplay');
+nlp.addDocument('en', 'transparent display', 'ardisplay');
+nlp.addDocument('en', 'virtual screen', 'ardisplay');
+nlp.addDocument('en', 'projected display', 'ardisplay');
+nlp.addDocument('en', 'what can the ar display do', 'ardisplay');
+nlp.addDocument('en', 'ar notifications', 'ardisplay');
+nlp.addDocument('en', 'smart glasses display', 'ardisplay');
+nlp.addDocument('en', 'head up display', 'ardisplay');
+nlp.addDocument('en', 'hud', 'ardisplay');
+nlp.addDocument('en', 'gesture control', 'gesture');
+nlp.addDocument('en', 'gesture controls', 'gesture');
+nlp.addDocument('en', 'hand gestures', 'gesture');
+nlp.addDocument('en', 'voice control', 'voice');
+nlp.addDocument('en', 'voice commands', 'voice');
 
 nlp.addAnswer('en', 'greeting', 'Hi there! I\'m Dasher, your FocusFrame guide. Ask me about the glasses, pricing, features, or anything else!');
 nlp.addAnswer('en', 'pricing', 'FocusFrame is <strong>300 QAR</strong> one-time for the glasses. Subscribe to the Tech Plan for <strong>12 QAR/month</strong> (monthly) or <strong>10 QAR/month</strong> billed annually (120 QAR/yr — save 24 QAR). <a href="/pricing.html">See full pricing</a>');
@@ -167,6 +182,9 @@ nlp.addAnswer('en', 'compatible', 'Compatible with iOS 16+ and Android 13+ via B
 nlp.addAnswer('en', 'water', 'Rated <strong>IPX4</strong> — splash-resistant against sweat, light rain, and spills. Not for submersion or swimming. The charging case is not water-resistant.');
 nlp.addAnswer('en', 'driving', 'Yes, safe for driving. The adaptive tint stays within legal transmittance limits, and blue-light filtration doesn\'t affect color perception needed for road signs.');
 nlp.addAnswer('en', 'help', 'You can reach us at <a href="mailto:hellofocusframe26@gmail.com">hellofocusframe26@gmail.com</a>. For quick questions, just ask me right here!');
+nlp.addAnswer('en', 'ardisplay', 'FocusFrame has a built-in transparent AR display that projects a bright virtual screen into your field of view. It supports notifications, calls, messages, navigation, web browsing, music, video, productivity apps, and AI assistant interactions. The display only activates when needed, auto-adjusts brightness, and is controlled via touch, voice, or gestures.');
+nlp.addAnswer('en', 'gesture', 'FocusFrame supports optional gesture controls alongside the touch-sensitive temple and voice commands — giving you multiple ways to interact with the AR display hands-free.');
+nlp.addAnswer('en', 'voice', 'Yes! FocusFrame supports voice commands through the Dasher AI assistant. You can control the AR display, make calls, send messages, and more without touching your glasses.');
 
 app.post('/api/chat', async function(req, res) {
   var messages = req.body.messages;

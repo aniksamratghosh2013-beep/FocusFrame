@@ -213,6 +213,25 @@ ul{list-style:none}
 .features__card-desc{font-size:0.9rem;color:var(--muted);line-height:1.6;margin-bottom:16px}
 .features__tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:500;background:var(--glass);border:1px solid var(--glass-border);color:var(--muted)}
 
+/* AR Display */
+.ar{background:var(--navy);overflow:hidden}
+.ar__inner{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+@media(max-width:768px){.ar__inner{grid-template-columns:1fr;gap:40px}}
+.ar__header .section__label{margin-bottom:16px}
+.ar__header .section__desc{margin-top:20px;font-size:1rem}
+.ar__features{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ar__feat{display:flex;align-items:flex-start;gap:12px;padding:16px;background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius)}
+.ar__feat svg{width:20px;height:20px;color:var(--primary);flex-shrink:0;margin-top:2px}
+.ar__feat-title{font-family:var(--ff-display);font-size:.85rem;font-weight:600;margin-bottom:4px}
+.ar__feat-desc{font-size:.78rem;color:var(--muted);line-height:1.5}
+.ar__visual{position:relative;display:flex;align-items:center;justify-content:center}
+.ar__frame{width:100%;max-width:360px;aspect-ratio:16/10;border-radius:var(--radius-lg);background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(6,182,212,0.08));border:1px solid rgba(99,102,241,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;position:relative;overflow:hidden}
+.ar__frame-glow{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,0.12),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
+.ar__frame-content{position:relative;z-index:1}
+.ar__frame-content svg{width:48px;height:48px;color:var(--primary);margin-bottom:16px}
+.ar__frame-content p{font-size:.85rem;color:var(--muted);line-height:1.6}
+.ar__frame-tag{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:.7rem;color:var(--muted);background:var(--glass);padding:4px 12px;border-radius:12px;border:1px solid var(--glass-border)}
+
 /* Lifestyle */
 .lifestyle{background:var(--dark)}
 .lifestyle__header{text-align:center;margin-bottom:64px}
@@ -553,7 +572,7 @@ ul{list-style:none}
         Features
       </span>
       <h2 class="section__title">Designed for the digital generation.</h2>
-      <p class="section__desc">Every detail of FocusFrame is engineered to protect your vision, enhance your focus, and adapt to your environment.</p>
+      <p class="section__desc">Every detail of FocusFrame is engineered to protect your vision, enhance your focus, and adapt to your environment — including a transparent AR display that brings digital information into your field of view without blocking the world around you.</p>
     </div>
     <div class="features__grid">
       <div class="features__card reveal">
@@ -611,6 +630,62 @@ ul{list-style:none}
         <h3 class="features__card-title">Transparent AR Display</h3>
         <p class="features__card-desc">A high-resolution virtual display projects into your field of view — perfect for notifications, navigation, calls, and AI assistant interactions, all while keeping your surroundings fully visible.</p>
         <span class="features__tag">Micro-OLED</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AR DISPLAY -->
+<section class="section ar" id="ar">
+  <div class="section__inner ar__inner">
+    <div class="ar__header reveal">
+      <span class="section__label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        AR Display
+      </span>
+      <h2 class="section__title">A virtual screen that floats before your eyes.</h2>
+      <p class="section__desc">FocusFrame projects a bright, high-resolution virtual display directly into your field of view while remaining fully transparent. It appears to float several feet in front of you — creating the experience of a large screen without blocking the real world.</p>
+    </div>
+    <div class="ar__visual reveal">
+      <div class="ar__frame">
+        <div class="ar__frame-glow"></div>
+        <div class="ar__frame-content">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <p>Notifications &middot; Navigation &middot; Calls &middot; Messages &middot; Music &middot; AI Assistant</p>
+        </div>
+        <span class="ar__frame-tag">Always transparent &bull; Never obstructs</span>
+      </div>
+    </div>
+  </div>
+  <div class="section__inner" style="margin-top:64px">
+    <div class="ar__features">
+      <div class="ar__feat reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div>
+          <div class="ar__feat-title">Smart Activation</div>
+          <div class="ar__feat-desc">The display activates only when needed and automatically turns off to conserve battery. Brightness adapts to ambient light for clear visibility indoors and out.</div>
+        </div>
+      </div>
+      <div class="ar__feat reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <div>
+          <div class="ar__feat-title">Multi-Mode Viewing</div>
+          <div class="ar__feat-desc">Notifications, calls, messages, navigation, web browsing, music controls, video playback, productivity apps, and real-time translations — all at a glance.</div>
+        </div>
+      </div>
+      <div class="ar__feat reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <div>
+          <div class="ar__feat-title">Voice & Touch Control</div>
+          <div class="ar__feat-desc">Interact using the touch-sensitive temple, voice commands via the AI assistant, or optional gesture controls. Your hands stay free.</div>
+        </div>
+      </div>
+      <div class="ar__feat reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div>
+          <div class="ar__feat-title">Seamless Integration</div>
+          <div class="ar__feat-desc">Works with blue-light filtering, adaptive lenses, notification silencing, and AI productivity tools — a complete everyday smart-glasses platform.</div>
+        </div>
       </div>
     </div>
   </div>
