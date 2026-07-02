@@ -29,14 +29,30 @@ app.post('/api/subscribe', async function(req, res) {
   res.json(result);
 });
 
-// GET /api/send-daily — manually trigger daily email send
+// GET /api/send-daily — manually trigger daily email send (requires CRON_KEY)
 app.get('/api/send-daily', async function(req, res) {
+  if (process.env.CRON_KEY && req.query.key !== process.env.CRON_KEY) {
+    return res.status(401).send('ERR_AUTH');
+  }
   try {
     var result = await mailer.sendDailyArticle();
     res.status(200).send(result);
   } catch (err) {
     console.error('send-daily error:', err.message);
     res.status(200).send('ERR:' + err.message.slice(0, 80));
+  }
+});
+
+// GET /api/test-email — send a test email to verify SMTP config
+app.get('/api/test-email', async function(req, res) {
+  if (!req.query.to || !req.query.to.includes('@')) {
+    return res.status(400).send('Specify ?to=email@example.com');
+  }
+  try {
+    await mailer.sendWelcomeEmail(req.query.to);
+    res.status(200).send('Test email sent to ' + req.query.to);
+  } catch (err) {
+    res.status(200).send('FAIL:' + err.message);
   }
 });
 
