@@ -197,6 +197,8 @@ nlp.addAnswer('en', 'gesture', 'FocusFrame supports optional gesture controls al
 nlp.addAnswer('en', 'voice', 'Yes! FocusFrame supports voice commands through the Dasher AI assistant. You can control the AR display, make calls, send messages, and more without touching your glasses.');
 nlp.addAnswer('en', 'founder', 'FocusFrame was founded by Anik Ghosh, a student innovator from DPS Monarch International School in Doha, Qatar. Driven by a passion for technology, AI, and human-centered design, Anik created FocusFrame to tackle digital eye strain, screen fatigue, and smartphone distractions. By combining smart wearable tech, augmented reality, adaptive lenses, and AI into a lightweight pair of glasses, FocusFrame is his vision for the future of personal computing — helping people stay connected while building healthier digital habits.');
 
+var nlpReady = false;
+
 app.post('/api/chat', async function(req, res) {
   var messages = req.body.messages;
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -225,6 +227,9 @@ app.post('/api/chat', async function(req, res) {
   }
 
   // Fallback: NLP intent classifier
+  if (!nlpReady) {
+    return res.json({ reply: 'Dasher is still warming up — give me a moment and try again.' });
+  }
   var nlpResponse = await nlp.process('en', lastMsg);
   var reply = nlpResponse.answer;
   if (!reply) {
@@ -233,10 +238,13 @@ app.post('/api/chat', async function(req, res) {
   res.json({ reply: reply });
 });
 
+app.listen(PORT, function() {
+  console.log('FocusFrame running at http://localhost:' + PORT);
+});
+
+// Train NLP model in background after server starts
 (async function() {
   await nlp.train();
+  nlpReady = true;
   console.log('Dasher ready');
-  app.listen(PORT, function() {
-    console.log('FocusFrame running at http://localhost:' + PORT);
-  });
 })();
