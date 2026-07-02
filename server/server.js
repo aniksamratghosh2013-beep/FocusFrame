@@ -29,7 +29,7 @@ app.get('/api/send-daily', async function(req, res) {
   }
   try {
     var result = await mailer.sendDailyArticle();
-    res.status(200).send('OK:' + result.sent + '/' + result.failed);
+    res.status(200).send(result);
   } catch (err) {
     console.error('send-daily error:', err.message);
     res.status(200).send('ERR:' + err.message.slice(0, 80));
