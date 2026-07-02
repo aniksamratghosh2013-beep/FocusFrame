@@ -1,42 +1,40 @@
 var nodemailer = require('nodemailer');
+var dns = require('dns');
 var db = require('./db');
 
 var transporter = null;
-var transporterReady = false;
+
+function createTransporter(port, secure, rejectUnauthorized) {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: port,
+    secure: secure,
+    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+    tls: { rejectUnauthorized: rejectUnauthorized },
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 20000,
+    lookup: function(hostname, opts, cb) {
+      dns.lookup(hostname, { family: 4, hints: dns.ADDRCONFIG }, cb);
+    },
+  });
+}
 
 function getTransporter() {
   if (transporter) return transporter;
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     throw new Error('Missing GMAIL_USER or GMAIL_APP_PASSWORD');
   }
-  transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
-    tls: { rejectUnauthorized: true },
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 20000,
-  });
+  transporter = createTransporter(465, true, true);
   return transporter;
 }
 
 getTransporter().verify().then(function() {
   console.log('Mail transporter verified');
 }).catch(function(err) {
-  console.error('Mail transporter FAILED (' + err.message + '), trying port 587...');
+  console.error('Mail transporter FAILED (' + err.message + '), trying 587...');
   transporter = null;
-  transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
-    tls: { rejectUnauthorized: false },
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 20000,
-  });
+  transporter = createTransporter(587, false, false);
   transporter.verify().then(function() {
     console.log('Mail transporter verified via 587');
   }).catch(function(err2) {
@@ -45,7 +43,7 @@ getTransporter().verify().then(function() {
 });
 
 // Article sets — must match blog.html weekly rotation
-var articleSets = [{f:{d:"May 26, 2026",c:"Eye Health",t:"The Hidden Cost of Blue Light: What the Research Actually Says",b:"A deep dive into the latest peer-reviewed studies on blue light exposure, circadian rhythms, and the surprising impact on long-term vision health.",u:"https://www.brightfocus.org/news/new-research-links-blue-light-to-macular-degeneration-risk-antioxidants-may-offer-hope"},g:[{d:"May 22, 2026",c:"Wellness",t:"5 Signs Your Screen Time Is Affecting Your Sleep",b:"Recognize the early warning signs of digital eye strain and circadian disruption before they become chronic.",u:"https://health.osu.edu/health/mental-health/how-screen-time-affects-your-health"},{d:"May 18, 2026",c:"Product",t:"Why We Built Silent Touch Instead of Voice Control",b:"Voice assistants are intrusive. Here\u2019s why we chose haptic touch for controlling your FocusFrame.",u:"#"},{d:"May 14, 2026",c:"Product",t:"FocusFrame vs. Traditional Blue-Light Glasses",b:"A full comparison of adaptive lens technology against conventional blue-light filtering solutions.",u:"#"},{d:"May 10, 2026",c:"Technology",t:"How Adaptive Lenses Actually Work",b:"The technology behind lenses that automatically adjust to ambient light and screen conditions.",u:"https://www.allaboutvision.com/eyewear/eyeglasses/lenses/photochromic/"},{d:"May 6, 2026",c:"Lifestyle",t:"Digital Minimalism: 3 Tools That Changed How We Work",b:"Our team\u2019s curated toolkit for reducing digital noise and reclaiming deep focus in a distracted world.",u:"https://www.configurationconnection.com/reclaim-your-time-focus-with-digital-minimalism"},{d:"May 2, 2026",c:"Company",t:"Qatar\u2019s Growing Role in Health-Tech Innovation",b:"How FocusFrame is contributing to Qatar\u2019s vision of becoming a global hub for health technology.",u:"#"}]},{f:{d:"May 25, 2026",c:"Eye Health",t:"Effective Tips for Reducing Eye Strain",b:"A Harvard Health guide to recognizing and preventing digital eye strain with simple daily habits and workspace adjustments.",u:"https://www.health.harvard.edu/healthy-aging-and-longevity/effective-tips-for-reducing-eye-strain"},g:[{d:"May 21, 2026",c:"Wellness",t:"Deep Work: A Framework for Focus in the Age of Distraction",b:"Understanding deep work and how creating distraction-free environments can dramatically improve cognitive output.",u:"https://www.autonomous.ai/ourblog/deep-work"},{d:"May 17, 2026",c:"Product",t:"How FocusFrame Protects Your Vision",b:"A look at the multi-layer eye protection built into every pair of FocusFrame smart glasses.",u:"#"},{d:"May 13, 2026",c:"Product",t:"Inside the FocusFrame Lens Technology",b:"From substrate materials to adaptive coatings\u2014what makes our lenses different from conventional eyewear.",u:"#"},{d:"May 9, 2026",c:"Technology",t:"Google\u2019s Latest Smart Glasses Patent: What It Means",b:"An analysis of Google\u2019s newly patented smart glasses with display, speaker, and eye-tracking capabilities.",u:"https://www.androidheadlines.com/2024/12/google-patents-smart-glasses-with-display-speaker-eye-tracking.html"},{d:"May 5, 2026",c:"Lifestyle",t:"What Is Deep Work? A Complete Guide",b:"The Asana guide to deep work: why distraction-free concentration is the most valuable skill in the modern workplace.",u:"https://asana.com/resources/what-is-deep-work"},{d:"May 1, 2026",c:"Company",t:"FocusFrame\u2019s Journey from Concept to Product",b:"The story of how our team turned an idea about better digital wellness into a reality.",u:"#"}]},{f:{d:"May 24, 2026",c:"Eye Health",t:"Screen Use for Kids: What Parents Need to Know",b:"The American Academy of Ophthalmology shares guidance on managing children\u2019s screen time for healthy eye development.",u:"https://www.aao.org/eye-health/tips-prevention/screen-use-kids"},g:[{d:"May 20, 2026",c:"Wellness",t:"The Impact of Screen Time on Mental Wellness",b:"How screen time and blue light exposure before bed interfere with sleep patterns and emotional regulation.",u:"https://www.slatetherapy.com/blog-slate/the-impact-of-sleep-and-screen-time-on-mental-wellness"},{d:"May 16, 2026",c:"Product",t:"Why FocusFrame Chose Adaptive Lenses",b:"The engineering trade-offs behind our decision to use photochromic technology over electronic dimming.",u:"#"},{d:"May 12, 2026",c:"Product",t:"FocusFrame Battery Life: What to Expect",b:"A detailed breakdown of power consumption and battery optimization in the FocusFrame smart glasses.",u:"#"},{d:"May 8, 2026",c:"Technology",t:"Photochromic Lenses: Types, Pros & Cons",b:"A comprehensive comparison of the different photochromic lens technologies available in 2026.",u:"https://www.visioncenter.org/eyeglasses/photochromic-lenses/"},{d:"May 4, 2026",c:"Lifestyle",t:"Digital Minimalism in 2026: Reclaiming Your Focus",b:"Practical strategies for reducing digital noise and building a more intentional relationship with technology.",u:"https://mybestday.ai/blog/digital-minimalism-focus-2025"},{d:"May 1, 2026",c:"Company",t:"Building the Future of Vision Technology in Qatar",b:"How FocusFrame is leveraging Doha\u2019s growing tech ecosystem to pioneer the next generation of eyewear.",u:"#"}]},{f:{d:"May 23, 2026",c:"Eye Health",t:"Eye Strain: Symptoms, Causes & Treatment",b:"The Cleveland Clinic\u2019s complete guide to eye strain, including digital eye strain causes and when to see a doctor.",u:"https://my.clevelandclinic.org/health/diseases/21059-eye-strain"},g:[{d:"May 19, 2026",c:"Wellness",t:"Screen Time, Sleep and Mental Health: What Research Shows",b:"New research from Texas A&M reveals the mediating role of sleep between screen time and adolescent mental health.",u:"https://vitalrecord.tamu.edu/researchers-assess-relationships-between-screen-time-sleep-and-mental-health-in-american-teens"},{d:"May 15, 2026",c:"Product",t:"Is FocusFrame Water Resistant?",b:"Understanding the durability and water resistance ratings of your FocusFrame smart glasses.",u:"#"},{d:"May 11, 2026",c:"Product",t:"Designing for Comfort: The FocusFrame Fit",b:"How we engineered a lightweight, comfortable frame that stays secure during all-day wear.",u:"#"},{d:"May 7, 2026",c:"Technology",t:"Transition Lenses: Pros and Cons",b:"The American Academy of Ophthalmology weighs the benefits and drawbacks of photochromic lenses for daily wear.",u:"https://www.aao.org/eye-health/tips-prevention/pros-cons-of-transitions-lenses"},{d:"May 3, 2026",c:"Lifestyle",t:"The Art of Digital Productivity in a Distracted World",b:"Strategies for thriving amid constant connectivity, with techniques for focused work and intentional tech use.",u:"https://www.wordraptor.com/blog/productivity-digital-age"},{d:"May 1, 2026",c:"Company",t:"FocusFrame\u2019s Commitment to Quality and Craftsmanship",b:"Our approach to materials, testing, and quality assurance that ensures every pair meets exacting standards.",u:"#"}]}];
+var articleSets = [{f:{d:"May 26, 2026",c:"Eye Health",t:"The Hidden Cost of Blue Light: What the Research Actually Says",b:"A deep dive into the latest peer-reviewed studies on blue light exposure, circadian rhythms, and the surprising impact on long-term vision health.",u:"https://www.brightfocus.org/news/new-research-links-blue-light-to-macular-degeneration-risk-antioxidants-may-offer-hope"},g:[{d:"May 22, 2026",c:"Wellness",t:"5 Signs Your Screen Time Is Affecting Your Sleep",b:"Recognize the early warning signs of digital eye strain and circadian disruption before they become chronic.",u:"https://health.osu.edu/health/mental-health/how-screen-time-affects-your-health"},{d:"May 18, 2026",c:"Product",t:"Why We Built Silent Touch Instead of Voice Control",b:"Voice assistants are intrusive. Here\u2019s why we chose haptic touch for controlling your FocusFrame.",u:"#"},{d:"May 14, 2026",c:"Product",t:"FocusFrame vs. Traditional Blue-Light Glasses",b:"A full comparison of adaptive lens technology against conventional blue-light filtering solutions.",u:"#"},{d:"May 10, 2026",c:"Technology",t:"How Adaptive Lenses Actually Work",b:"The technology behind lenses that automatically adjust to ambient light and screen conditions.",u:"https://www.allaboutvision.com/eyewear/eyeglasses/lenses/photochromic/"},{d:"May 6, 2026",c:"Lifestyle",t:"Digital Minimalism: 3 Tools That Changed How We Work",b:"Our team\u2019s curated toolkit for reducing digital noise and reclaiming deep focus in a distracted world.",u:"https://www.configurationconnection.com/reclaim-your-time-focus-with-digital-minimalism"},{d:"May 2, 2026",c:"Company",t:"Qatar\u2019s Growing Role in Health-Tech Innovation",b:"How FocusFrame is contributing to Qatar\u2019s vision of becoming a global hub for health technology.",u:"#"}]},{f:{d:"May 25, 2026",c:"Eye Health",t:"Effective Tips for Reducing Eye Strain",b:"A Harvard Health guide to recognizing and preventing digital eye strain with simple daily habits and workspace adjustments.",u:"https://www.health.harvard.edu/staying-healthy/computer-related-eye-strain"},{d:"May 21, 2026",c:"Technology",t:"The Future of Smart Eyewear",b:"Where wearable display technology is headed and how FocusFrame fits into the next decade of human-computer interaction.",u:"#"}/*,{d:"May 17, 2026",c:"Wellness",t:"Screen Time and Mental Health: What the Data Says",b:"An analysis of recent studies linking prolonged screen exposure to anxiety, attention span, and overall well-being.",u:"#"},{d:"May 13, 2026",c:"Product",t:"Our Design Philosophy: Why We Chose Titanium",b:"The material science behind our 18g frame and how titanium alloy improves durability without adding weight.",u:"#"}*/];
 
 function getWeekNumber(date) {
   var d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -129,16 +127,13 @@ async function sendDailyArticle() {
   try {
     var article = pickArticle();
     if (!article) return 'no_article';
-
     var t = getTransporter();
     var emails = db.getAllEmails();
     if (emails.length === 0) return 'no_subs';
-
     var emailHtml = buildEmailHtml(article);
     var senderName = process.env.SENDER_NAME || 'FocusFrame';
     var sent = 0;
     var failed = 0;
-
     for (var j = 0; j < emails.length; j++) {
       try {
         await t.sendMail({
@@ -153,7 +148,6 @@ async function sendDailyArticle() {
         failed++;
       }
     }
-
     return 'ok:' + sent + '/' + failed;
   } catch (err) {
     return 'err:' + err.message.slice(0, 100);
