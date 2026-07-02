@@ -12,13 +12,18 @@ app.use(express.json());
 // Serve the FocusFrame static site
 app.use(express.static(path.join(__dirname, '..')));
 
-// POST /api/subscribe — save email to JSON database
-app.post('/api/subscribe', function(req, res) {
+// POST /api/subscribe — save email to JSON database and send welcome email
+app.post('/api/subscribe', async function(req, res) {
   var email = (req.body.email || '').trim().toLowerCase();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid email' });
   }
   var result = db.addSubscriber(email);
+  if (result.success) {
+    mailer.sendWelcomeEmail(email).catch(function(err) {
+      console.error('Welcome email failed:', err.message);
+    });
+  }
   res.json(result);
 });
 
