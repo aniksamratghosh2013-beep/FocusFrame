@@ -44,7 +44,7 @@ var nlp = new Nlp({ languages: ['en'], container: container });
 container.register('nlp', nlp);
 container.register('Language', LangEn);
 
-var SITE_INFO = 'FocusFrame is smart eyewear (300 QAR) with adaptive blue-light lenses, silent touch controls, ambient light sensing, 18g titanium frame, 7-day battery, and a built-in transparent AR display that projects notifications, navigation, calls, and apps into your field of view. Pages: / (home), /pricing.html (300 QAR + 12/10 QAR tech plan), /about.html (mission + team), /blog.html (weekly articles), /careers.html (5 open roles). Contact: hellofocusframe26@gmail.com.';
+var SITE_INFO = 'FocusFrame is smart eyewear (300 QAR) with adaptive blue-light lenses, silent touch controls, ambient light sensing, 18g titanium frame, 7-day battery, and a built-in transparent AR display that projects notifications, navigation, calls, and apps into your field of view. Founded by Anik Ghosh, a student innovator from DPS Monarch International School, Doha, Qatar. Pages: / (home), /pricing.html (300 QAR + 12/10 QAR tech plan), /about.html (mission + team), /blog.html (weekly articles), /careers.html (5 open roles). Contact: hellofocusframe26@gmail.com.';
 
 nlp.addDocument('en', 'hello', 'greeting');
 nlp.addDocument('en', 'hi', 'greeting');
@@ -163,6 +163,16 @@ nlp.addDocument('en', 'gesture controls', 'gesture');
 nlp.addDocument('en', 'hand gestures', 'gesture');
 nlp.addDocument('en', 'voice control', 'voice');
 nlp.addDocument('en', 'voice commands', 'voice');
+nlp.addDocument('en', 'who created focusframe', 'founder');
+nlp.addDocument('en', 'who made focusframe', 'founder');
+nlp.addDocument('en', 'who is the founder', 'founder');
+nlp.addDocument('en', 'who is the ceo', 'founder');
+nlp.addDocument('en', 'who is the owner', 'founder');
+nlp.addDocument('en', 'who founded focusframe', 'founder');
+nlp.addDocument('en', 'anik ghosh', 'founder');
+nlp.addDocument('en', 'founder', 'founder');
+nlp.addDocument('en', 'ceo', 'founder');
+nlp.addDocument('en', 'creator', 'founder');
 
 nlp.addAnswer('en', 'greeting', 'Hi there! I\'m Dasher, your FocusFrame guide. Ask me about the glasses, pricing, features, or anything else!');
 nlp.addAnswer('en', 'pricing', 'FocusFrame is <strong>300 QAR</strong> one-time for the glasses. Subscribe to the Tech Plan for <strong>12 QAR/month</strong> (monthly) or <strong>10 QAR/month</strong> billed annually (120 QAR/yr — save 24 QAR). <a href="/pricing.html">See full pricing</a>');
@@ -185,6 +195,7 @@ nlp.addAnswer('en', 'help', 'You can reach us at <a href="mailto:hellofocusframe
 nlp.addAnswer('en', 'ardisplay', 'FocusFrame has a built-in transparent AR display that projects a bright virtual screen into your field of view. It supports notifications, calls, messages, navigation, web browsing, music, video, productivity apps, and AI assistant interactions. The display only activates when needed, auto-adjusts brightness, and is controlled via touch, voice, or gestures.');
 nlp.addAnswer('en', 'gesture', 'FocusFrame supports optional gesture controls alongside the touch-sensitive temple and voice commands — giving you multiple ways to interact with the AR display hands-free.');
 nlp.addAnswer('en', 'voice', 'Yes! FocusFrame supports voice commands through the Dasher AI assistant. You can control the AR display, make calls, send messages, and more without touching your glasses.');
+nlp.addAnswer('en', 'founder', 'FocusFrame was founded by Anik Ghosh, a student innovator from DPS Monarch International School in Doha, Qatar. Driven by a passion for technology, AI, and human-centered design, Anik created FocusFrame to tackle digital eye strain, screen fatigue, and smartphone distractions. By combining smart wearable tech, augmented reality, adaptive lenses, and AI into a lightweight pair of glasses, FocusFrame is his vision for the future of personal computing — helping people stay connected while building healthier digital habits.');
 
 app.post('/api/chat', async function(req, res) {
   var messages = req.body.messages;
