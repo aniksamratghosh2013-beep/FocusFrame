@@ -85,7 +85,7 @@ function buildWelcomeHtml() {
     '<h1 style="margin:0 0 8px 0;font-size:22px;color:#f1f5f9;font-family:\'Space Grotesk\',Inter,sans-serif;font-weight:600;line-height:1.3">You\'re in.</h1>',
     '<p style="margin:0 0 24px 0;font-size:15px;color:#94a3b8;line-height:1.6">Thanks for subscribing to the FocusFrame newsletter. You\'ll now receive weekly articles on eye health, technology, wellness, and lifestyle — delivered straight to your inbox every morning.</p>',
     '<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:#6366f1;padding:0">',
-    '<a href="https://focusframe-ru71.onrender.com/" target="_blank" style="display:inline-block;padding:12px 28px;font-size:14px;color:#fff;text-decoration:none;font-weight:500;border-radius:8px">Explore FocusFrame</a>',
+    '<a href="https://focus-frame.onrender.com/" target="_blank" style="display:inline-block;padding:12px 28px;font-size:14px;color:#fff;text-decoration:none;font-weight:500;border-radius:8px">Explore FocusFrame</a>',
     '</td></tr></table>',
     '</td></tr>',
     '<tr><td style="padding:32px 40px;border-top:1px solid rgba(255,255,255,0.06)">',
