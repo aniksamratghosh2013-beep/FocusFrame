@@ -260,8 +260,7 @@ app.post('/api/chat', async function(req, res) {
 
 app.listen(PORT, function() {
   console.log('FocusFrame running at http://localhost:' + PORT);
-  console.log('GMAIL_USER set:', !!process.env.GMAIL_USER);
-  console.log('GMAIL_APP_PASSWORD set:', !!process.env.GMAIL_APP_PASSWORD);
+  console.log('BREVO_API_KEY set:', !!process.env.BREVO_API_KEY);
 });
 
 var cron = require('node-cron');
