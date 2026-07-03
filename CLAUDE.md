@@ -90,8 +90,8 @@ To add new intents, update the `nlp.addDocument()` and `nlp.addAnswer()` calls i
 - Subscriber emails stored in `server/data/subscribers.json`
 - Daily newsletter sending via `/api/send-daily` endpoint (requires ?key=CRON_KEY)
 - Email templates and sending logic in `server/mailer.js`
-- SendPulse API used for email delivery (OAuth2 token, cached for 1 hour)
-- Sender email (hellofocusframe26@gmail.com) verified on SendPulse via confirmation link
+- Brevo API used for email delivery (300 emails/day free tier, HTTPS API)
+- Sender email (hellofocusframe26@gmail.com) verified on Brevo via confirmation link
 
 ## Deployment
 The application is configured for deployment on Render:
