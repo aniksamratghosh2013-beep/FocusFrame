@@ -56,6 +56,18 @@ app.get('/api/test-email', async function(req, res) {
   }
 });
 
+// GET /api/download-emails — download the EMAIL_LIST.xlsx file
+app.get('/api/download-emails', function(req, res) {
+  var fs = require('fs');
+  var excelPath = path.join(__dirname, '..', 'EMAIL_LIST.xlsx');
+  if (!fs.existsSync(excelPath)) {
+    return res.status(404).send('No email records yet');
+  }
+  res.setHeader('Content-Disposition', 'attachment; filename=EMAIL_LIST.xlsx');
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  fs.createReadStream(excelPath).pipe(res);
+});
+
 // POST /api/chat — Dasher AI assistant
 // Uses Groq LLM when GROQ_API_KEY is set, gracefully falls back to NLP intent classifier
 var { containerBootstrap, Nlp, LangEn } = require('@nlpjs/basic');
