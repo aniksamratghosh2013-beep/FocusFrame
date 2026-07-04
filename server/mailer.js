@@ -99,7 +99,7 @@ async function sendDailyArticle() {
   try {
     var article = pickArticle();
     if (!article) return 'no_article';
-    var emails = db.getAllEmails();
+    var emails = await db.getAllEmails();
     if (emails.length === 0) return 'no_subs';
     var emailHtml = buildEmailHtml(article);
     var sent = 0;

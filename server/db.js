@@ -1,47 +1,49 @@
-var fs = require('fs');
-var path = require('path');
+var { createClient } = require('@supabase/supabase-js');
 
-var DATA_DIR = path.join(__dirname, 'data');
-var SUBSCRIBERS_PATH = path.join(DATA_DIR, 'subscribers.json');
+var supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+async function addSubscriber(email) {
+  var { data: existing } = await supabase
+    .from('subscribers')
+    .select('email')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (existing) {
+    return { success: true, message: 'Already subscribed' };
   }
-}
 
-function readSubscribers() {
-  ensureDataDir();
-  if (!fs.existsSync(SUBSCRIBERS_PATH)) {
-    return [];
+  var { error } = await supabase
+    .from('subscribers')
+    .insert({ email: email, subscribed_for_daily: true });
+
+  if (error) {
+    if (error.code === '23505') {
+      return { success: true, message: 'Already subscribed' };
+    }
+    throw error;
   }
-  try {
-    return JSON.parse(fs.readFileSync(SUBSCRIBERS_PATH, 'utf8'));
-  } catch {
-    return [];
-  }
-}
 
-function writeSubscribers(list) {
-  ensureDataDir();
-  fs.writeFileSync(SUBSCRIBERS_PATH, JSON.stringify(list, null, 2), 'utf8');
-}
-
-function addSubscriber(email) {
-  var list = readSubscribers();
-  var exists = list.some(function(s) { return s.email === email; });
-  if (exists) return { success: true, message: 'Already subscribed' };
-  list.push({ email: email, subscribed_at: new Date().toISOString() });
-  writeSubscribers(list);
   return { success: true };
 }
 
-function getAllEmails() {
-  return readSubscribers().map(function(s) { return s.email; });
+async function getAllEmails() {
+  var { data, error } = await supabase
+    .from('subscribers')
+    .select('email');
+
+  if (error) throw error;
+  return data.map(function(s) { return s.email; });
 }
 
-function getAllSubscribers() {
-  return readSubscribers();
+async function getAllSubscribers() {
+  var { data, error } = await supabase
+    .from('subscribers')
+    .select('*')
+    .order('subscribed_at', { ascending: true });
+
+  if (error) throw error;
+  return data;
 }
 
 module.exports = { addSubscriber, getAllEmails, getAllSubscribers };

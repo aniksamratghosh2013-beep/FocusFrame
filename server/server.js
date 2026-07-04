@@ -18,7 +18,7 @@ app.post('/api/subscribe', async function(req, res) {
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid email' });
   }
-  var result = db.addSubscriber(email);
+  var result = await db.addSubscriber(email);
   if (result.success) {
     mailer.sendWelcomeEmail(email).then(function() {
       console.log('Welcome email sent to ' + email);
@@ -57,9 +57,9 @@ app.get('/api/test-email', async function(req, res) {
 });
 
 // GET /api/download-emails — download dynamically generated Excel from subscriber data
-app.get('/api/download-emails', function(req, res) {
+app.get('/api/download-emails', async function(req, res) {
   try {
-    var list = db.getAllSubscribers();
+    var list = await db.getAllSubscribers();
     var XLSX = require('xlsx');
     var data = [['Email', 'Date of Entering', 'Time of Entering', 'Subscribed for Daily Article']];
     for (var i = 0; i < list.length; i++) {
@@ -286,6 +286,8 @@ app.post('/api/chat', async function(req, res) {
 app.listen(PORT, function() {
   console.log('FocusFrame running at http://localhost:' + PORT);
   console.log('BREVO_API_KEY set:', !!process.env.BREVO_API_KEY);
+  console.log('SUPABASE_URL set:', !!process.env.SUPABASE_URL);
+  console.log('SUPABASE_SERVICE_KEY set:', !!process.env.SUPABASE_SERVICE_KEY);
 });
 
 var cron = require('node-cron');
