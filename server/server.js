@@ -56,16 +56,29 @@ app.get('/api/test-email', async function(req, res) {
   }
 });
 
-// GET /api/download-emails — download the EMAIL_LIST.xlsx file
+// GET /api/download-emails — download dynamically generated Excel from subscriber data
 app.get('/api/download-emails', function(req, res) {
-  var fs = require('fs');
-  var excelPath = path.join(__dirname, '..', 'EMAIL_LIST.xlsx');
-  if (!fs.existsSync(excelPath)) {
-    return res.status(404).send('No email records yet');
+  try {
+    var list = db.getAllSubscribers();
+    var XLSX = require('xlsx');
+    var data = [['Email', 'Date of Entering', 'Time of Entering', 'Subscribed for Daily Article']];
+    for (var i = 0; i < list.length; i++) {
+      var dt = new Date(list[i].subscribed_at);
+      var d = ('0' + dt.getDate()).slice(-2) + '/' + ('0' + (dt.getMonth() + 1)).slice(-2) + '/' + dt.getFullYear();
+      var t = ('0' + dt.getHours()).slice(-2) + ':' + ('0' + dt.getMinutes()).slice(-2);
+      data.push([list[i].email, d, t, 'Yes']);
+    }
+    var ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [{ wch: 40 }, { wch: 20 }, { wch: 20 }, { wch: 30 }];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Emails');
+    var buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    res.setHeader('Content-Disposition', 'attachment; filename=EMAIL_LIST.xlsx');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buf);
+  } catch (e) {
+    res.status(500).send('Error: ' + e.message);
   }
-  res.setHeader('Content-Disposition', 'attachment; filename=EMAIL_LIST.xlsx');
-  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  fs.createReadStream(excelPath).pipe(res);
 });
 
 // POST /api/chat — Dasher AI assistant
