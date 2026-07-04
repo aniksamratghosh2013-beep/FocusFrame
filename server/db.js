@@ -45,17 +45,17 @@ function appendToExcel(email) {
       wb = XLSX.readFile(EXCEL_PATH);
     } else {
       wb = XLSX.utils.book_new();
-      var hdr = [['Date of Entering', 'Time of Entering', 'Subscribed for Daily Article']];
+      var hdr = [['Email', 'Date of Entering', 'Time of Entering', 'Subscribed for Daily Article']];
       var ws = XLSX.utils.aoa_to_sheet(hdr);
-      ws['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 30 }];
+      ws['!cols'] = [{ wch: 40 }, { wch: 20 }, { wch: 20 }, { wch: 30 }];
       XLSX.utils.book_append_sheet(wb, ws, 'Emails');
     }
 
     var ws = wb.Sheets['Emails'];
     var ref = XLSX.utils.decode_range(ws['!ref']);
     var nextRow = ref.e.r + 1;
-    XLSX.utils.sheet_add_aoa(ws, [[dateStr, timeStr, 'Yes']], { origin: nextRow });
-    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: nextRow, c: 2 } });
+    XLSX.utils.sheet_add_aoa(ws, [[email, dateStr, timeStr, 'Yes']], { origin: nextRow });
+    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: nextRow, c: 3 } });
     XLSX.writeFile(wb, EXCEL_PATH);
   } catch (e) {
     console.error('Excel append error:', e.message);
