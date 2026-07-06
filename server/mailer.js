@@ -69,22 +69,38 @@ function buildWelcomeHtml() {
 async function sendEmail(to, subject, html) {
   var fromEmail = process.env.BREVO_FROM || 'hellofocusframe26@gmail.com';
   var fromName = process.env.SENDER_NAME || 'FocusFrame';
-  var resp = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': process.env.BREVO_API_KEY,
-    },
-    body: JSON.stringify({
-      sender: { name: fromName, email: fromEmail },
-      to: [{ email: to }],
-      subject: subject,
-      htmlContent: html,
-    }),
-  });
-  var data = await resp.json();
-  if (!data.messageId) {
-    throw new Error('Brevo [' + resp.status + ']: ' + (data.message || JSON.stringify(data)));
+  var maxRetries = 3;
+  for (var attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      var resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+        },
+        body: JSON.stringify({
+          sender: { name: fromName, email: fromEmail },
+          to: [{ email: to }],
+          subject: subject,
+          htmlContent: html,
+        }),
+      });
+      var data = await resp.json();
+      if (!data.messageId) {
+        if (resp.status >= 500 && attempt < maxRetries - 1) {
+          await new Promise(function(r) { setTimeout(r, (attempt + 1) * 2000); });
+          continue;
+        }
+        throw new Error('Brevo [' + resp.status + ']: ' + (data.message || JSON.stringify(data)));
+      }
+      return;
+    } catch (err) {
+      if (attempt < maxRetries - 1 && (err.message.includes('fetch') || err.message.includes('network') || err.message.includes('ECONN'))) {
+        await new Promise(function(r) { setTimeout(r, (attempt + 1) * 2000); });
+        continue;
+      }
+      throw err;
+    }
   }
 }
 
@@ -109,6 +125,7 @@ async function sendDailyArticle() {
         console.error('Failed to send to ' + emails[j] + ':', err.message);
         failed++;
       }
+      if (j < emails.length - 1) await new Promise(function(r) { setTimeout(r, 500); });
     }
     return 'ok:' + sent + '/' + failed;
   } catch (err) {
